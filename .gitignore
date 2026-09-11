@@ -1,0 +1,82 @@
+# =============================================================================
+# SynapseOps — .gitignore
+# =============================================================================
+
+# Environment / secrets — NEVER commit these
+.env
+.env.local
+.env.*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.pyo
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# uv
+.uv/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+
+# Docker
+.docker/
+
+# Alembic — do NOT ignore versions/
+# (migration scripts should be committed)
+
+# Logs
+*.log
+logs/
+
+# Database files (local SQLite if ever used in dev)
+*.db
+*.sqlite
+*.sqlite3
+
+# Compiled assets
+*.min.js
+*.min.css
+
+# Temporary
+tmp/
+temp/
+scratch/

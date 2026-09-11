@@ -2,272 +2,234 @@
 
 **Autonomous Infrastructure Intelligence & Self-Healing System**
 
-> An experimental, safety-constrained, closed-loop infrastructure operations system that aims to observe, detect, diagnose, reason about, plan, and execute controlled recovery actions across distributed software infrastructure.
+> ⚠️ **Current Status: Phase 1 — Project Foundation**
+> The application foundation is implemented and runnable. Detection, diagnosis, planning, and autonomous recovery are not yet implemented.
 
 ---
 
-## Project Status
+## Project Overview
+
+SynapseOps is a long-term engineering and research project exploring how AI-assisted reasoning can be combined with deterministic safety controls to help infrastructure systems observe, understand, diagnose, and recover from failures.
+
+The core operational loop:
 
 ```
-Phase 0 — Architecture and Project Definition
-Status: Active
-Implementation: Not yet begun
+OBSERVE → DETECT → UNDERSTAND → DIAGNOSE → REASON → PLAN → SAFETY/POLICY → ACT → VERIFY → LEARN
 ```
 
-This project is currently in its **founding architecture phase**. No application code, infrastructure, or ML models have been implemented yet. This repository contains the engineering constitution, architecture, principles, technology direction, roadmap, and research framework that will govern all future implementation.
+This is a personal engineering project built for serious learning, systems thinking, portfolio development, and research exploration. It is not a production system.
 
 ---
 
-## Why SynapseOps Exists
+## Current Phase: Phase 1 — Project Foundation
 
-Modern software infrastructure is:
+### What exists now
 
-- **Distributed** — services run across many nodes, containers, and regions
-- **Dynamic** — topology changes continuously through deployments, scaling, and failures
-- **Interconnected** — failures cascade across service boundaries in non-obvious ways
-- **Telemetry-rich** — vast quantities of metrics, logs, traces, and events are generated
-- **Difficult to operate manually at scale** — human operators face cognitive overload during incidents
-
-Traditional monitoring and alerting systems surface the raw signal of a problem. They leave the operator responsible for correlating evidence, identifying root cause, selecting a safe response, and executing it correctly under time pressure.
-
-SynapseOps aims to explore how an intelligent system can meaningfully participate in that operational loop — not to replace human judgment, but to augment it with structured reasoning, evidence-grounded diagnosis, and safety-constrained action.
-
----
-
-## Core Vision
-
-> **Build an intelligent, safety-constrained, closed-loop system capable of understanding and operating complex software infrastructure.**
-
-The distinction that defines SynapseOps:
-
-| Automation | Intelligent Operations |
+| Capability | Status |
 |---|---|
-| A predefined rule triggers a predefined action | The system observes a changing environment, interprets evidence, forms hypotheses, evaluates candidate actions, respects safety constraints, acts within authorization boundaries, and evaluates the outcome |
+| FastAPI application with structured startup/shutdown | ✅ |
+| Health endpoints (liveness, readiness, summary) | ✅ |
+| Pydantic Settings — environment-based configuration | ✅ |
+| Core domain models: Incident, Anomaly, Action, Outcome | ✅ |
+| PostgreSQL integration (SQLAlchemy async) | ✅ |
+| Database migration infrastructure (Alembic) | ✅ |
+| Redis integration layer | ✅ |
+| Structured application logging (structlog) | ✅ |
+| Exception handling — no internal error leakage | ✅ |
+| Unit test suite (pytest) | ✅ |
+| Linting and formatting (Ruff) | ✅ |
+| Docker Compose local development stack | ✅ |
+| OpenAPI documentation (`/docs`, `/redoc`) | ✅ |
 
-SynapseOps is not an attempt to automate away all human operators. It is an attempt to build a system that can reason about infrastructure the way a skilled engineer would — grounded in evidence, constrained by policy, and transparent in its decisions.
+### What is NOT implemented yet
 
----
-
-## The Operational Loop
-
-The conceptual backbone of SynapseOps is a closed-loop operational cycle:
-
-```
-OBSERVE
-    ↓
-DETECT
-    ↓
-UNDERSTAND
-    ↓
-DIAGNOSE
-    ↓
-REASON
-    ↓
-PLAN
-    ↓
-SAFETY / POLICY
-    ↓
-ACT
-    ↓
-VERIFY
-    ↓
-LEARN
-    ↓
-OBSERVE AGAIN
-```
-
-Every architectural component maps to one or more stages in this loop.
+| Capability | Planned Phase |
+|---|---|
+| Infrastructure simulator | Phase 2 |
+| Prometheus / Grafana / OpenTelemetry | Phase 3 |
+| System state engine | Phase 4 |
+| Anomaly detection (statistical / ML) | Phase 5 |
+| Dependency graph and root cause analysis | Phase 6 |
+| LLM-assisted incident reasoning (Gemini/OpenAI) | Phase 7 |
+| Recovery planner | Phase 8 |
+| Policy engine and human approval | Phase 9 |
+| Action executor | Phase 10 |
+| Verification and learning engine | Phase 11 |
+| Evaluation dashboard | Phase 12 |
 
 ---
 
-## High-Level Architecture
+## Architecture Overview
 
 ```
-                    SYNAPSEOPS
-                         │
-                         ▼
-              ┌────────────────────┐
-              │   Observability    │
-              │  Metrics / Logs /  │
-              │  Traces / Events   │
-              └─────────┬──────────┘
-                        │
-                        ▼
-              ┌────────────────────┐
-              │  Event & State     │
-              │  Intelligence      │
-              └─────────┬──────────┘
-                        │
-                        ▼
-              ┌────────────────────┐
-              │  Detection &       │
-              │  Anomaly Analysis  │
-              └─────────┬──────────┘
-                        │
-                        ▼
-              ┌────────────────────┐
-              │  Dependency &      │
-              │  Root Cause        │
-              │  Reasoning         │
-              └─────────┬──────────┘
-                        │
-                        ▼
-              ┌────────────────────┐
-              │  AI Incident       │
-              │  Reasoning         │
-              └─────────┬──────────┘
-                        │
-                        ▼
-              ┌────────────────────┐
-              │  Recovery Planning │
-              └─────────┬──────────┘
-                        │
-                        ▼
-              ┌────────────────────┐
-              │  Safety & Policy   │
-              └─────────┬──────────┘
-                        │
-                 ┌──────┴──────┐
-                 ▼             ▼
-             Automatic    Human Approval
-             Execution
-                 │             │
-                 └──────┬──────┘
-                        ▼
-              ┌────────────────────┐
-              │  Action Executor   │
-              └─────────┬──────────┘
-                        │
-                        ▼
-              ┌────────────────────┐
-              │  Verification &    │
-              │  Outcome Analysis  │
-              └─────────┬──────────┘
-                        │
-                        ▼
-              ┌────────────────────┐
-              │  Feedback/Learning │
-              └─────────┬──────────┘
-                        │
-                        └──────────→ OBSERVE
+┌─────────────────────────────────────────────────────────┐
+│                    SynapseOps Backend                   │
+│                                                         │
+│  FastAPI Application                                    │
+│  ├── core/          Configuration, logging, errors      │
+│  ├── api/           HTTP routes                         │
+│  ├── models/        Domain (Pydantic) + DB (SQLAlchemy) │
+│  ├── db/            Engine and session management       │
+│  └── cache/         Redis client                        │
+│                                                         │
+│  External Services (Phase 1)                            │
+│  ├── PostgreSQL     Primary database                    │
+│  └── Redis          Cache / short-lived state           │
+└─────────────────────────────────────────────────────────┘
 ```
 
-This is the **intended target architecture**. It is documented here as a design goal, not a description of currently implemented functionality.
+The full target architecture is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
+The AI reasoning and action execution layers are architecturally separated. The LLM (Phase 7+) cannot directly execute actions — all proposed actions pass through schema validation, precondition checks, policy evaluation, and authorization before execution.
 
 ---
 
-## Technology Direction
+## Repository Structure
 
-| Layer | Technology | Status |
+```
+SynapseOps/
+├── backend/                    Application source code
+│   ├── main.py                 Application entry point
+│   ├── core/                   Config, logging, errors
+│   ├── api/                    Routes and API router
+│   ├── models/
+│   │   ├── domain/             Pydantic domain models
+│   │   └── db/                 SQLAlchemy ORM models
+│   ├── db/                     Database engine and sessions
+│   └── cache/                  Redis client
+├── alembic/                    Database migrations
+│   └── versions/               Migration scripts
+├── tests/
+│   ├── unit/                   Unit tests (no external deps)
+│   └── integration/            Integration tests (require DB/Redis)
+├── docs/                       Project documentation (Phase 0+)
+│   ├── PROJECT_VISION.md       Vision and problem definition
+│   ├── ARCHITECTURE.md         System architecture
+│   ├── ROADMAP.md              12-phase development trajectory
+│   ├── SAFETY.md               Safety architecture
+│   ├── AI_DESIGN.md            AI philosophy and boundaries
+│   ├── TECH_STACK.md           Technology decisions
+│   ├── ENGINEERING_PRINCIPLES.md  Core design principles
+│   ├── DEVELOPMENT.md          Development workflow
+│   ├── SETUP.md                Development setup guide
+│   └── ...
+├── .env.example                Environment variable template
+├── pyproject.toml              Project metadata and tool config
+├── alembic.ini                 Alembic configuration
+├── Dockerfile                  Container image
+└── docker-compose.yml          Local development stack
+```
+
+---
+
+## Quick Start
+
+### Prerequisites
+
+- Python ≥ 3.11
+- [uv](https://github.com/astral-sh/uv) (package manager)
+- Docker Desktop (for PostgreSQL + Redis)
+
+### Setup
+
+```bash
+# 1. Create virtual environment
+uv venv .venv --python 3.11
+source .venv/bin/activate
+
+# 2. Install dependencies
+uv pip install -e ".[dev]"
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env — set POSTGRES_PASSWORD at minimum
+
+# 4. Start PostgreSQL and Redis
+docker-compose up -d postgres redis
+
+# 5. Run database migrations
+alembic upgrade head
+
+# 6. Start the API
+uvicorn backend.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+The API is now running at `http://localhost:8000`.
+
+| URL | Description |
+|---|---|
+| `http://localhost:8000/health` | Health summary |
+| `http://localhost:8000/health/live` | Liveness probe |
+| `http://localhost:8000/health/ready` | Readiness probe |
+| `http://localhost:8000/docs` | Interactive API docs |
+
+See [`docs/SETUP.md`](docs/SETUP.md) for the full setup guide including troubleshooting.
+
+---
+
+## Running Tests
+
+```bash
+# Unit tests only (no DB/Redis required)
+pytest tests/unit/ -v
+
+# All tests with coverage report
+pytest --cov=backend --cov-report=term-missing
+```
+
+---
+
+## Linting
+
+```bash
+ruff check .           # Check for lint errors
+ruff format . --check  # Check formatting
+ruff format .          # Apply formatting
+```
+
+---
+
+## Docker Compose (Full Local Stack)
+
+> Requires Docker Desktop.
+
+```bash
+docker-compose up -d --build
+docker-compose logs -f api
+```
+
+---
+
+## Documentation
+
+| Document | Description |
+|---|---|
+| [`docs/SETUP.md`](docs/SETUP.md) | Development setup guide |
+| [`docs/ROADMAP.md`](docs/ROADMAP.md) | 12-phase development plan |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System architecture |
+| [`docs/SAFETY.md`](docs/SAFETY.md) | Safety model and action boundaries |
+| [`docs/AI_DESIGN.md`](docs/AI_DESIGN.md) | AI philosophy and design |
+| [`docs/ENGINEERING_PRINCIPLES.md`](docs/ENGINEERING_PRINCIPLES.md) | Core design principles |
+| [`docs/TECH_STACK.md`](docs/TECH_STACK.md) | Technology decisions |
+| [`docs/RESEARCH.md`](docs/RESEARCH.md) | Research questions |
+| [`docs/EVALUATION.md`](docs/EVALUATION.md) | Evaluation metrics |
+| [`docs/ARCHITECTURE_DECISIONS.md`](docs/ARCHITECTURE_DECISIONS.md) | ADR log |
+| [`docs/GLOSSARY.md`](docs/GLOSSARY.md) | Project terminology |
+
+---
+
+## Phase History
+
+| Phase | Description | Status |
 |---|---|---|
-| Core language | Python | Initial |
-| Backend API | FastAPI | Initial |
-| Frontend | Next.js + TypeScript + Tailwind CSS | Initial |
-| Database | PostgreSQL | Initial |
-| Cache / State | Redis | Initial |
-| Containerization | Docker | Initial |
-| Metrics | Prometheus | Initial |
-| Visualization | Grafana | Initial |
-| Telemetry SDK | OpenTelemetry | Initial |
-| Orchestration | Kubernetes | Later |
-| Graph analysis | NetworkX → graph DB | Initial → Conditional |
-| ML / Anomaly Detection | scikit-learn, NumPy, Pandas | Later |
-| Deep Learning | PyTorch | Conditional |
-| AI Reasoning | LLM API integration | Later |
-| Log aggregation | Loki | Conditional |
-
-See [`docs/TECH_STACK.md`](docs/TECH_STACK.md) for full details and rationale.
+| Phase 0 | Project definition and engineering constitution | ✅ Complete |
+| Phase 1 | Project foundation (FastAPI, DB, Redis, tests) | ✅ Complete |
+| Phase 2 | Infrastructure simulation environment | 🔲 Planned |
+| Phase 3 | Observability pipeline | 🔲 Planned |
+| Phase 4–12 | See [`docs/ROADMAP.md`](docs/ROADMAP.md) | 🔲 Planned |
 
 ---
 
-## Safety Philosophy
+## License
 
-SynapseOps is designed around a fundamental principle:
-
-> **AI reasoning and action execution are architecturally separated.**
-
-The reasoning component proposes. The policy engine evaluates. The execution component acts only within explicit authorization boundaries. Human operators approve high-risk actions. The system verifies outcomes, not just action success.
-
-See [`docs/SAFETY.md`](docs/SAFETY.md) for the full safety model.
-
----
-
-## Research Direction
-
-SynapseOps is primarily an engineering project, but it is designed to enable future experimental inquiry into questions such as:
-
-- Can infrastructure anomalies be reliably detected from multimodal telemetry?
-- How do service dependency graphs improve root-cause analysis?
-- How should AI-generated recovery plans be evaluated and constrained?
-- What is the right boundary between deterministic automation and AI reasoning?
-- How can recovery outcomes inform future decision-making?
-
-See [`docs/RESEARCH.md`](docs/RESEARCH.md) for the full research framework.
-
----
-
-## Development Roadmap
-
-| Phase | Title | Status |
-|---|---|---|
-| **0** | Project Definition & Engineering Constitution | ✅ Active |
-| 1 | Repository + Core Architecture | Planned |
-| 2 | Infrastructure Simulation Environment | Planned |
-| 3 | Observability & Telemetry | Planned |
-| 4 | System State & Event Intelligence | Planned |
-| 5 | Anomaly Detection | Planned |
-| 6 | Root Cause & Dependency Intelligence | Planned |
-| 7 | AI Incident Reasoning | Planned |
-| 8 | Recovery Planning | Planned |
-| 9 | Safety / Policy / Human Approval | Planned |
-| 10 | Controlled Autonomous Execution | Planned |
-| 11 | Verification + Feedback + Learning | Planned |
-| 12 | Dashboard + Evaluation + Documentation | Planned |
-
-See [`docs/ROADMAP.md`](docs/ROADMAP.md) for phase-by-phase objectives and dependencies.
-
----
-
-## Documentation Structure
-
-```
-docs/
-├── PROJECT_VISION.md          — Core vision, problem definition, what SynapseOps is and is not
-├── ARCHITECTURE.md            — System architecture, component model, future directory structure
-├── ENGINEERING_PRINCIPLES.md  — Architectural principles governing all design decisions
-├── DEVELOPMENT.md             — Development philosophy, workflow, coding standards
-├── TECH_STACK.md              — Technology choices, rationale, categorization
-├── AI_DESIGN.md               — AI/LLM philosophy, hybrid intelligence model
-├── SAFETY.md                  — Safety model, authorization model, policy framework
-├── ROADMAP.md                 — Phase-by-phase development plan
-├── GLOSSARY.md                — Project terminology and definitions
-├── RESEARCH.md                — Research questions and experimentation direction
-├── EVALUATION.md              — Evaluation framework and metrics
-├── GITHUB_STANDARDS.md        — Repository quality standards
-└── ARCHITECTURE_DECISIONS.md  — ADR framework and overengineering avoidance principles
-```
-
----
-
-## Setup
-
-> **No setup instructions exist yet.** Implementation has not begun.
->
-> A future setup guide will explain how to clone the repository, install prerequisites, start the simulated infrastructure, and run the full SynapseOps operational loop locally.
-
----
-
-## Disclaimer
-
-SynapseOps is an **experimental personal engineering project** intended for learning, portfolio development, and research exploration.
-
-- It is **not** a production-ready platform.
-- It is **not** intended for uncontrolled production use at any stage.
-- It does **not** claim to solve autonomous infrastructure management.
-- All capability descriptions are framed as engineering goals and design intentions, not current achievements.
-
-This project is built with engineering rigor and intellectual honesty. Claims made about its capabilities at any stage will be grounded in what has been implemented and measured, not aspirational marketing.
-
----
-
-*SynapseOps — built carefully, one phase at a time.*
+MIT — Personal engineering and research project.

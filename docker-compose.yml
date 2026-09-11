@@ -1,0 +1,214 @@
+# =============================================================================
+# SynapseOps — Docker Compose (Local Development)
+#
+# Phase 2: Infrastructure Simulation Environment
+#
+# Core SynapseOps services:
+#   - api          : SynapseOps FastAPI backend           :8000
+#   - postgres     : PostgreSQL database                  :5432
+#   - redis        : Redis cache (shared with simulator)  :6379
+#
+# Simulated infrastructure (Phase 2):
+#   - sim-gateway  : Simulated API gateway                :8100
+#   - sim-api      : Simulated API service                :8101
+#   - sim-worker   : Simulated worker service             :8102
+#
+# Usage:
+#   Start all services:   docker-compose up -d
+#   View logs:            docker-compose logs -f api
+#   Inject a failure:     curl -X POST http://localhost:8000/api/v1/simulation/scenarios/WORKER_CRASH/activate
+#   Check sim health:     curl http://localhost:8000/api/v1/simulation/services/health
+#   Clear failures:       curl -X DELETE http://localhost:8000/api/v1/simulation/failures
+#   Stop all:             docker-compose down
+#   Destroy volumes:      docker-compose down -v
+# =============================================================================
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # PostgreSQL — Primary database
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: synapseops-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-synapseops}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_local_only}
+      POSTGRES_DB: ${POSTGRES_DB:-synapseops}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-synapseops} -d ${POSTGRES_DB:-synapseops}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # Redis — Cache and simulation failure state store
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: synapseops-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---------------------------------------------------------------------------
+  # SynapseOps API — FastAPI backend
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: synapseops-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8000}:8000"
+    environment:
+      APP_NAME: ${APP_NAME:-SynapseOps}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      DEBUG: ${DEBUG:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB:-synapseops}
+      POSTGRES_USER: ${POSTGRES_USER:-synapseops}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme_local_only}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: ${REDIS_DB:-0}
+      # Simulation service URLs (Phase 2)
+      SIM_GATEWAY_URL: http://sim-gateway:8100
+      SIM_API_URL: http://sim-api:8101
+      SIM_WORKER_URL: http://sim-worker:8102
+      SIM_FAILURE_REDIS_KEY: sim:failures
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health/live || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Simulated Gateway — Phase 2
+  # Simulates the API gateway sitting in front of the API service.
+  # Emits metrics at :8100/metrics and health at :8100/health.
+  # ---------------------------------------------------------------------------
+  sim-gateway:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: synapseops-sim-gateway
+    restart: unless-stopped
+    command: >
+      uvicorn backend.simulation.services.gateway:app
+      --host 0.0.0.0
+      --port 8100
+      --log-level warning
+    ports:
+      - "8100:8100"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: ${REDIS_DB:-0}
+      SIM_FAILURE_REDIS_KEY: sim:failures
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8100/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 8s
+
+  # ---------------------------------------------------------------------------
+  # Simulated API Service — Phase 2
+  # Simulates the core API service behind the gateway.
+  # Emits metrics at :8101/metrics and health at :8101/health.
+  # ---------------------------------------------------------------------------
+  sim-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: synapseops-sim-api
+    restart: unless-stopped
+    command: >
+      uvicorn backend.simulation.services.api_service:app
+      --host 0.0.0.0
+      --port 8101
+      --log-level warning
+    ports:
+      - "8101:8101"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: ${REDIS_DB:-0}
+      SIM_FAILURE_REDIS_KEY: sim:failures
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8101/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 8s
+
+  # ---------------------------------------------------------------------------
+  # Simulated Worker — Phase 2
+  # Simulates the background worker service.
+  # Emits metrics at :8102/metrics and health at :8102/health.
+  # ---------------------------------------------------------------------------
+  sim-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: synapseops-sim-worker
+    restart: unless-stopped
+    command: >
+      uvicorn backend.simulation.services.worker:app
+      --host 0.0.0.0
+      --port 8102
+      --log-level warning
+    ports:
+      - "8102:8102"
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: ${REDIS_DB:-0}
+      SIM_FAILURE_REDIS_KEY: sim:failures
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8102/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 8s
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
