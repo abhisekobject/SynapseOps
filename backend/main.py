@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info(
         "SynapseOps starting",
         environment=settings.environment,
-        phase="Phase 7 — AI Incident Reasoning",
+        phase="Phase 8 — Recovery Planning",
     )
 
     # --- Startup ---
@@ -73,7 +73,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     )
     failure_controller.start_expiry_task()
 
-    # Phase 4, 5, 6, 7: Intelligence Engines
+    # Phase 4, 5, 6, 7, 8: Intelligence Engines
     from backend.events.engine import EventEngine
     from backend.events.normalizer import TelemetryNormalizer
     from backend.intelligence.anomaly import AnomalyDetector
@@ -83,6 +83,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         MockReasoningProvider,
         OpenAIReasoningProvider,
     )
+    from backend.intelligence.recovery.core import PlanValidator
+    from backend.intelligence.recovery.providers import MockRecoveryPlanner, OpenAIRecoveryPlanner
     from backend.state.engine import SystemStateEngine
     from backend.telemetry.ingestion import TelemetryPoller
 
@@ -115,8 +117,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     if settings.ai_provider == "openai":
         app.state.reasoning_provider = OpenAIReasoningProvider(settings)
+        app.state.recovery_planner = OpenAIRecoveryPlanner(settings)
     else:
         app.state.reasoning_provider = MockReasoningProvider()
+        app.state.recovery_planner = MockRecoveryPlanner()
+
+    app.state.plan_validator = PlanValidator()
 
     logger.info("SynapseOps startup complete")
 
