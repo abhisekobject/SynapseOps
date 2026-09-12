@@ -134,6 +134,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     execution_gate = ExecutionGate()
     app.state.execution_engine = ExecutionEngine(gate=execution_gate, timeout_seconds=10.0)
 
+    from backend.intelligence.outcomes.verification import VerificationEngine
+    app.state.verification_engine = VerificationEngine()
+
     logger.info("SynapseOps startup complete")
 
     yield  # Application is running

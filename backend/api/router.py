@@ -7,6 +7,7 @@ from backend.api.routes.execution import router as execution_router
 from backend.api.routes.health import router as health_router
 from backend.api.routes.intelligence import router as intelligence_router
 from backend.api.routes.metrics import router as metrics_router
+from backend.api.routes.outcomes import router as outcomes_router
 from backend.api.routes.reasoning import router as reasoning_router
 from backend.api.routes.recovery import router as recovery_router
 from backend.api.routes.safety import router as safety_router
@@ -25,9 +26,10 @@ api_router.include_router(simulation_router, prefix="/api/v1")
 api_router.include_router(state_router, prefix="/api/v1")
 api_router.include_router(events_router, prefix="/api/v1")
 
-# Phase 6, 7, 8, 9, 10: Intelligence, AI, Recovery, Safety & Execution API
+# Phase 6, 7, 8, 9, 10, 11: Intelligence, AI, Recovery, Safety, Execution & Outcomes API
 api_router.include_router(intelligence_router, prefix="/api/v1")
 api_router.include_router(reasoning_router, prefix="/api/v1")
 api_router.include_router(recovery_router, prefix="/api/v1")
 api_router.include_router(safety_router, prefix="/api/v1")
 api_router.include_router(execution_router, prefix="/api/v1")
+api_router.include_router(outcomes_router, prefix="/api/v1")
