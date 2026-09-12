@@ -53,7 +53,7 @@ class ApprovalRequestResponse(BaseModel):
 
 class PlanIntegrity:
     """Utility class to compute cryptographic hashes of recovery plans to detect tampering."""
-    
+
     @staticmethod
     def compute_hash(plan: RecoveryPlan) -> str:
         """
@@ -68,13 +68,13 @@ class PlanIntegrity:
                 "target_component": step.target_component,
                 "estimated_risk": step.estimated_risk.value,
             })
-            
+
         canonical_plan = {
             "plan_id": plan.plan_id,
             "incident_id": plan.incident_id,
             "steps": canonical_steps,
         }
-        
+
         # Ensure consistent ordering and no spaces for reliable hashing
         serialized = json.dumps(canonical_plan, sort_keys=True, separators=(",", ":"))
         return hashlib.sha256(serialized.encode("utf-8")).hexdigest()

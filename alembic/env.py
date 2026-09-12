@@ -28,6 +28,11 @@ from backend.models.db.base import Base
 from backend.models.db.event import EventORM  # noqa: F401
 from backend.models.db.incident import IncidentORM  # noqa: F401
 from backend.models.db.outcome import OutcomeORM  # noqa: F401
+from backend.models.db.safety import (  # noqa: F401
+    ApprovalRequestORM,
+    PolicyDecisionORM,
+    SafetyAuditEventORM,
+)
 from backend.models.db.state import StateTransitionORM  # noqa: F401
 
 # Alembic Config object

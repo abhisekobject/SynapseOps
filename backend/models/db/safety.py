@@ -1,12 +1,13 @@
 import uuid
 from datetime import UTC, datetime
-from sqlalchemy import JSON, Boolean, DateTime, String
+
+from sqlalchemy import JSON, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from backend.models.db.base import Base
 
 
-class PolicyDecisionModel(Base):
+class PolicyDecisionORM(Base):
     """Persisted record of a deterministic Policy Engine evaluation."""
     __tablename__ = "policy_decisions"
 
@@ -20,7 +21,7 @@ class PolicyDecisionModel(Base):
     evaluated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC))
 
 
-class ApprovalRequestModel(Base):
+class ApprovalRequestORM(Base):
     """Persisted record of a human approval state machine."""
     __tablename__ = "approval_requests"
 
@@ -35,7 +36,7 @@ class ApprovalRequestModel(Base):
     resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
-class SafetyAuditEventModel(Base):
+class SafetyAuditEventORM(Base):
     """Append-only audit trail for Phase 9 safety operations."""
     __tablename__ = "safety_audit_events"
 
