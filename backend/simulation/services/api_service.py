@@ -102,11 +102,19 @@ class ApiService(SimulatedServiceBase):
             4096.0,  # Cap at 4GB for realism
         )
 
+        db_latency = random.uniform(5.0, 15.0)
+        db_exhaustion = next(
+            (f for f in failures if f.failure_type == FailureType.DB_CONNECTION_EXHAUSTION), None
+        )
+        if db_exhaustion:
+            db_latency += db_exhaustion.severity * 3000.0
+
         return {
             "cpu_percent": round(cpu, 2),
             "memory_mb": round(memory_mb, 2),
             "active_connections": self._active_connections,
             "queue_depth": None,
+            "database_latency_ms": round(db_latency, 2),
         }
 
 

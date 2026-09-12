@@ -20,7 +20,7 @@ class TestSettingsDefaults:
         assert s.environment == "development"
 
     def test_debug_default_is_false(self):
-        s = Settings(postgres_password="x")
+        s = Settings(postgres_password="x", _env_file=None)
         assert s.debug is False
 
     def test_api_port_default(self):

@@ -172,11 +172,19 @@ class WorkerService(SimulatedServiceBase):
         )
         cpu = min(100.0, base_cpu + cpu_boost)
 
+        db_latency = random.uniform(50.0, 120.0)
+        db_exhaustion = next(
+            (f for f in failures if f.failure_type == FailureType.DB_CONNECTION_EXHAUSTION), None
+        )
+        if db_exhaustion:
+            db_latency += db_exhaustion.severity * 2000.0
+
         return {
             "cpu_percent": round(cpu, 2),
             "memory_mb": round(base_mem, 2),
             "active_connections": None,
             "queue_depth": self._queue_depth,
+            "database_latency_ms": round(db_latency, 2),
         }
 
 

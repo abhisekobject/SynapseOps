@@ -17,6 +17,10 @@ def settings():
         error_rate_critical_threshold=5.0,
         queue_warning_threshold=10,
         queue_critical_threshold=30,
+        cpu_warning_threshold=75.0,
+        cpu_critical_threshold=90.0,
+        memory_warning_threshold=500.0,
+        memory_critical_threshold=1024.0,
     )
 
 
@@ -33,12 +37,16 @@ def test_normalize_healthy(normalizer):
         p99_latency_ms=150.0,
         error_rate_percent=0.0,
         queue_depth=0,
+        cpu_percent=50.0,
+        memory_mb=256.0,
     )
     events = normalizer.normalize(snapshot)
 
-    assert len(events) == 1
-    assert events[0].event_type == EventType.SERVICE_AVAILABLE
-    assert events[0].severity == EventSeverity.INFO
+    # Should have SERVICE_AVAILABLE and FAILURE_CLEARED
+    types = [e.event_type for e in events]
+    assert EventType.SERVICE_AVAILABLE in types
+    assert EventType.FAILURE_CLEARED in types
+    assert len(events) == 2
 
 
 def test_normalize_latency_critical(normalizer):
@@ -71,6 +79,36 @@ def test_normalize_error_rate_warning(normalizer):
     )
 
 
+def test_normalize_cpu_critical(normalizer):
+    snapshot = TelemetrySnapshot(
+        service_id="sim-api",
+        timestamp=datetime.now(UTC),
+        is_healthy=True,
+        cpu_percent=95.0,  # Critical
+    )
+    events = normalizer.normalize(snapshot)
+
+    assert any(
+        e.event_type == EventType.CPU_PRESSURE and e.severity == EventSeverity.CRITICAL
+        for e in events
+    )
+
+
+def test_normalize_memory_warning(normalizer):
+    snapshot = TelemetrySnapshot(
+        service_id="sim-api",
+        timestamp=datetime.now(UTC),
+        is_healthy=True,
+        memory_mb=700.0,  # Warning
+    )
+    events = normalizer.normalize(snapshot)
+
+    assert any(
+        e.event_type == EventType.MEMORY_PRESSURE and e.severity == EventSeverity.WARNING
+        for e in events
+    )
+
+
 def test_normalize_unhealthy_and_failure(normalizer):
     snapshot = TelemetrySnapshot(
         service_id="sim-worker",
@@ -83,3 +121,19 @@ def test_normalize_unhealthy_and_failure(normalizer):
     types = [e.event_type for e in events]
     assert EventType.SERVICE_UNAVAILABLE in types
     assert EventType.FAILURE_INJECTED in types
+    assert EventType.FAILURE_CLEARED not in types
+
+
+def test_normalize_database_latency_critical(normalizer):
+    snapshot = TelemetrySnapshot(
+        service_id="sim-worker",
+        timestamp=datetime.now(UTC),
+        is_healthy=True,
+        database_latency_ms=2000.0,  # Critical
+    )
+    events = normalizer.normalize(snapshot)
+
+    assert any(
+        e.event_type == EventType.DATABASE_LATENCY_INCREASE and e.severity == EventSeverity.CRITICAL
+        for e in events
+    )

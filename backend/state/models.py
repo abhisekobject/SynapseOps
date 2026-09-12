@@ -47,3 +47,11 @@ class SystemSnapshot(BaseModel):
     )
 
     services: dict[str, ServiceState] = Field(description="Current state of all known services")
+
+class StateTransition(BaseModel):
+    id: str = Field(description="Transition ID")
+    service_id: str = Field(description="Service ID")
+    previous_status: ServiceStatus = Field(description="Previous status")
+    new_status: ServiceStatus = Field(description="New status")
+    reason: str | None = Field(default=None, description="Reason for transition")
+    created_at: datetime = Field(description="Transition timestamp")

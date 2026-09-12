@@ -13,11 +13,13 @@ class TelemetrySnapshot(BaseModel):
     requests_per_second: float | None = None
     error_rate_percent: float | None = None
     p50_latency_ms: float | None = None
+    p95_latency_ms: float | None = None
     p99_latency_ms: float | None = None
 
     cpu_percent: float | None = None
     memory_mb: float | None = None
     queue_depth: int | None = None
+    database_latency_ms: float | None = None
 
     # Fundamental indicators
     is_healthy: bool = Field(description="Whether the service reports as fully healthy")

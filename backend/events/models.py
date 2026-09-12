@@ -17,9 +17,18 @@ class EventType(StrEnum):
 
     CPU_PRESSURE = "cpu_pressure"
     MEMORY_PRESSURE = "memory_pressure"
+    DATABASE_LATENCY_INCREASE = "database_latency_increase"
 
     FAILURE_INJECTED = "failure_injected"
     FAILURE_CLEARED = "failure_cleared"
+
+    # Phase 5 Anomaly Types
+    ANOMALY_LATENCY = "anomaly_latency"
+    ANOMALY_ERROR_RATE = "anomaly_error_rate"
+    ANOMALY_CPU = "anomaly_cpu"
+    ANOMALY_MEMORY = "anomaly_memory"
+    ANOMALY_QUEUE = "anomaly_queue"
+    ANOMALY_DATABASE_LATENCY = "anomaly_database_latency"
 
 
 class EventSeverity(StrEnum):

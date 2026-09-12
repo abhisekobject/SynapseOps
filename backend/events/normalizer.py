@@ -105,7 +105,70 @@ class TelemetryNormalizer:
                     )
                 )
 
-        # 5. Failure Injection checks (bridging from simulation directly)
+        # 5. CPU checks
+        if snapshot.cpu_percent is not None:
+            if snapshot.cpu_percent >= self.settings.cpu_critical_threshold:
+                events.append(
+                    self._create_event(
+                        snapshot,
+                        EventType.CPU_PRESSURE,
+                        EventSeverity.CRITICAL,
+                        f"Critical CPU usage: {snapshot.cpu_percent}% (threshold: {self.settings.cpu_critical_threshold}%)",
+                    )
+                )
+            elif snapshot.cpu_percent >= self.settings.cpu_warning_threshold:
+                events.append(
+                    self._create_event(
+                        snapshot,
+                        EventType.CPU_PRESSURE,
+                        EventSeverity.WARNING,
+                        f"Warning CPU usage: {snapshot.cpu_percent}% (threshold: {self.settings.cpu_warning_threshold}%)",
+                    )
+                )
+
+        # 6. Memory checks
+        if snapshot.memory_mb is not None:
+            if snapshot.memory_mb >= self.settings.memory_critical_threshold:
+                events.append(
+                    self._create_event(
+                        snapshot,
+                        EventType.MEMORY_PRESSURE,
+                        EventSeverity.CRITICAL,
+                        f"Critical Memory usage: {snapshot.memory_mb}MB (threshold: {self.settings.memory_critical_threshold}MB)",
+                    )
+                )
+            elif snapshot.memory_mb >= self.settings.memory_warning_threshold:
+                events.append(
+                    self._create_event(
+                        snapshot,
+                        EventType.MEMORY_PRESSURE,
+                        EventSeverity.WARNING,
+                        f"Warning Memory usage: {snapshot.memory_mb}MB (threshold: {self.settings.memory_warning_threshold}MB)",
+                    )
+                )
+
+        # 6.5. Database Latency checks
+        if snapshot.database_latency_ms is not None:
+            if snapshot.database_latency_ms >= self.settings.db_latency_critical_threshold_ms:
+                events.append(
+                    self._create_event(
+                        snapshot,
+                        EventType.DATABASE_LATENCY_INCREASE,
+                        EventSeverity.CRITICAL,
+                        f"Critical Database latency: {snapshot.database_latency_ms}ms (threshold: {self.settings.db_latency_critical_threshold_ms}ms)",
+                    )
+                )
+            elif snapshot.database_latency_ms >= self.settings.db_latency_warning_threshold_ms:
+                events.append(
+                    self._create_event(
+                        snapshot,
+                        EventType.DATABASE_LATENCY_INCREASE,
+                        EventSeverity.WARNING,
+                        f"Warning Database latency: {snapshot.database_latency_ms}ms (threshold: {self.settings.db_latency_warning_threshold_ms}ms)",
+                    )
+                )
+
+        # 7. Failure Injection checks (bridging from simulation directly)
         if snapshot.active_failure_count > 0:
             events.append(
                 self._create_event(
@@ -113,6 +176,16 @@ class TelemetryNormalizer:
                     EventType.FAILURE_INJECTED,
                     EventSeverity.CRITICAL,
                     f"Service {snapshot.service_id} has {snapshot.active_failure_count} active injected failures.",
+                )
+            )
+        else:
+            # Explicitly emit FAILURE_CLEARED if no failures are active.
+            events.append(
+                self._create_event(
+                    snapshot,
+                    EventType.FAILURE_CLEARED,
+                    EventSeverity.INFO,
+                    f"Service {snapshot.service_id} has no active injected failures.",
                 )
             )
 
@@ -136,6 +209,8 @@ class TelemetryNormalizer:
             evidence["error_rate_percent"] = snapshot.error_rate_percent
         if snapshot.queue_depth is not None:
             evidence["queue_depth"] = snapshot.queue_depth
+        if snapshot.database_latency_ms is not None:
+            evidence["database_latency_ms"] = snapshot.database_latency_ms
         evidence["is_healthy"] = snapshot.is_healthy
         evidence["active_failure_count"] = snapshot.active_failure_count
 

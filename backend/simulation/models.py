@@ -278,6 +278,7 @@ class ServiceHealthSnapshot(BaseModel):
     memory_mb: float | None = Field(default=None)
     active_connections: int | None = Field(default=None)
     queue_depth: int | None = Field(default=None)
+    database_latency_ms: float | None = Field(default=None)
     snapshot_at: datetime = Field(
         default_factory=lambda: datetime.now(UTC),
     )

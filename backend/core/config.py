@@ -120,9 +120,59 @@ class Settings(BaseSettings):
         default=30,
         description="Threshold for CRITICAL queue depth events",
     )
+    cpu_warning_threshold: float = Field(
+        default=75.0,
+        description="Threshold (%) for WARNING cpu events",
+    )
+    cpu_critical_threshold: float = Field(
+        default=90.0,
+        description="Threshold (%) for CRITICAL cpu events",
+    )
+    memory_warning_threshold: float = Field(
+        default=500.0,
+        description="Threshold (MB) for WARNING memory events",
+    )
+    memory_critical_threshold: float = Field(
+        default=1024.0,
+        description="Threshold (MB) for CRITICAL memory events",
+    )
+    db_latency_warning_threshold_ms: float = Field(
+        default=500.0,
+        description="Threshold (ms) for WARNING database latency events",
+    )
+    db_latency_critical_threshold_ms: float = Field(
+        default=1500.0,
+        description="Threshold (ms) for CRITICAL database latency events",
+    )
     state_staleness_seconds: int = Field(
         default=15,
         description="Time (seconds) without telemetry before a service is UNKNOWN",
+    )
+
+    # --- Intelligence (Phase 5) ---
+    anomaly_window_size: int = Field(
+        default=60,
+        description="Number of telemetry samples in the rolling baseline window",
+    )
+    anomaly_min_samples: int = Field(
+        default=12,
+        description="Minimum samples required before generating anomalies (cold start)",
+    )
+    anomaly_z_warning: float = Field(
+        default=3.0,
+        description="Z-score threshold for WARNING behavioral anomalies",
+    )
+    anomaly_z_critical: float = Field(
+        default=4.0,
+        description="Z-score threshold for CRITICAL behavioral anomalies",
+    )
+    anomaly_activation_consecutive: int = Field(
+        default=3,
+        description="Consecutive anomalous samples required to activate an anomaly (noise suppression)",
+    )
+    anomaly_absolute_fallback: float = Field(
+        default=1.0,
+        description="Fallback absolute deviation if historical variance (stddev) is zero",
     )
 
     @computed_field  # type: ignore[prop-decorator]

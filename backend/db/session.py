@@ -7,6 +7,7 @@ a database session per request.
 
 from collections.abc import AsyncGenerator
 
+from fastapi import Request
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 from backend.core.errors import DatabaseError
@@ -33,9 +34,8 @@ def create_session_factory(engine: AsyncEngine) -> async_sessionmaker[AsyncSessi
     )
 
 
-async def get_db_session(
-    session_factory: async_sessionmaker[AsyncSession],
-) -> AsyncGenerator[AsyncSession, None]:
+
+async def get_db_session(request: Request) -> AsyncGenerator[AsyncSession, None]:
     """FastAPI dependency that yields a database session for the request lifecycle.
 
     Usage in a route:
@@ -48,6 +48,7 @@ async def get_db_session(
 
     The session is committed on success and rolled back on exception.
     """
+    session_factory = request.app.state.session_factory
     async with session_factory() as session:
         try:
             yield session

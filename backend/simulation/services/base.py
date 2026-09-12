@@ -130,6 +130,13 @@ class LatencyTracker:
         idx = math.floor(len(sorted_samples) * 0.50)
         return sorted_samples[min(idx, len(sorted_samples) - 1)]
 
+    def p95(self) -> float | None:
+        if not self._samples:
+            return None
+        sorted_samples = sorted(self._samples)
+        idx = math.floor(len(sorted_samples) * 0.95)
+        return sorted_samples[min(idx, len(sorted_samples) - 1)]
+
     def p99(self) -> float | None:
         if not self._samples:
             return None
@@ -423,6 +430,7 @@ class SimulatedServiceBase:
             requests_per_second=round(self._compute_rps(), 2),
             error_rate_percent=round(self._compute_error_rate(), 2),
             p50_latency_ms=self._latency_tracker.p50(),
+            p95_latency_ms=self._latency_tracker.p95(),
             p99_latency_ms=self._latency_tracker.p99(),
             **custom,
         )
@@ -442,11 +450,13 @@ class SimulatedServiceBase:
         rps = self._compute_rps()
         error_rate = self._compute_error_rate()
         p50 = self._latency_tracker.p50() or 0.0
+        p95 = self._latency_tracker.p95() or 0.0
         p99 = self._latency_tracker.p99() or 0.0
         cpu = custom.get("cpu_percent") or 0.0
         mem = custom.get("memory_mb") or 0.0
         conns = custom.get("active_connections") or 0
         queue = custom.get("queue_depth") or 0
+        db_lat = custom.get("database_latency_ms") or 0.0
         is_healthy = 0 if failures else 1
 
         svc = self.service_name.replace("-", "_")
@@ -460,6 +470,9 @@ class SimulatedServiceBase:
             f"# HELP {svc}_request_latency_p50_ms p50 request latency in milliseconds",
             f"# TYPE {svc}_request_latency_p50_ms gauge",
             f"{svc}_request_latency_p50_ms {p50:.4f}",
+            f"# HELP {svc}_request_latency_p95_ms p95 request latency in milliseconds",
+            f"# TYPE {svc}_request_latency_p95_ms gauge",
+            f"{svc}_request_latency_p95_ms {p95:.4f}",
             f"# HELP {svc}_request_latency_p99_ms p99 request latency in milliseconds",
             f"# TYPE {svc}_request_latency_p99_ms gauge",
             f"{svc}_request_latency_p99_ms {p99:.4f}",
@@ -475,9 +488,15 @@ class SimulatedServiceBase:
             f"# HELP {svc}_queue_depth Job queue depth",
             f"# TYPE {svc}_queue_depth gauge",
             f"{svc}_queue_depth {queue}",
+            f"# HELP {svc}_database_latency_ms Simulated database query latency in ms",
+            f"# TYPE {svc}_database_latency_ms gauge",
+            f"{svc}_database_latency_ms {db_lat:.4f}",
             f"# HELP {svc}_healthy 1 if service is healthy (no active failures), else 0",
             f"# TYPE {svc}_healthy gauge",
             f"{svc}_healthy {is_healthy}",
+            f"# HELP {svc}_active_failure_count Number of active failures",
+            f"# TYPE {svc}_active_failure_count gauge",
+            f"{svc}_active_failure_count {len(failures)}",
             f"# HELP {svc}_total_requests Total requests handled since startup",
             f"# TYPE {svc}_total_requests counter",
             f"{svc}_total_requests {self._request_count}",

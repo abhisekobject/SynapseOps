@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info(
         "SynapseOps starting",
         environment=settings.environment,
-        phase="Phase 4 — System State & Event Intelligence",
+        phase="Phase 6 — Root Cause & Dependency Intelligence",
     )
 
     # --- Startup ---
@@ -73,19 +73,24 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     )
     failure_controller.start_expiry_task()
 
-    # Phase 4: System State & Event Intelligence
+    # Phase 4, 5, 6: Intelligence Engines
     from backend.events.engine import EventEngine
     from backend.events.normalizer import TelemetryNormalizer
+    from backend.intelligence.anomaly import AnomalyDetector
+    from backend.intelligence.graph import DependencyGraph
+    from backend.intelligence.rca import RCAEngine
     from backend.state.engine import SystemStateEngine
     from backend.telemetry.ingestion import TelemetryPoller
 
     telemetry_normalizer = TelemetryNormalizer(settings)
-    event_engine = EventEngine()
-    state_engine = SystemStateEngine(settings)
+    anomaly_detector = AnomalyDetector(settings)
+    event_engine = EventEngine(session_factory)
+    state_engine = SystemStateEngine(settings, session_factory)
 
     telemetry_poller = TelemetryPoller(
         settings=settings,
         normalizer=telemetry_normalizer,
+        anomaly_detector=anomaly_detector,
         event_engine=event_engine,
         state_engine=state_engine,
     )
@@ -99,6 +104,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     app.state.event_engine = event_engine
     app.state.state_engine = state_engine
+
+    dependency_graph = DependencyGraph()
+    app.state.dependency_graph = dependency_graph
+    app.state.rca_engine = RCAEngine(graph=dependency_graph)
 
     logger.info("SynapseOps startup complete")
 

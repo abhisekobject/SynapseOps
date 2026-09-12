@@ -26,6 +26,8 @@ dependencies = [
     "httpx>=0.27.0",
     # Logging
     "structlog>=24.4.0",
+    # Intelligence (Phase 6)
+    "networkx>=3.0.0",
     # Observability — Metrics (Phase 3)
     "prometheus-client>=0.21.0",
     # Observability — Tracing (Phase 3)
