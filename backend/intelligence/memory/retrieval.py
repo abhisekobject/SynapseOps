@@ -69,13 +69,18 @@ class RetrievalEngine:
                 score_val += 5
                 reasons.append("MATCH: learning_signal_type")
 
+            # Environment
+            if query.environment and query.environment == exp.environment:
+                score_val += 10
+                reasons.append("MATCH: environment")
+
             # Keep only items that have at least some relevance (and are not heavily penalized)
             if score_val > 0:
                 relevance = RelevanceScore(score=score_val, reasons=reasons)
                 results.append(RetrievedExperience(experience=exp, relevance=relevance))
 
-        # Sort by score descending
-        results.sort(key=lambda x: x.relevance.score, reverse=True)
+        # Sort by score descending, then experience_id ascending for deterministic tie-breaking
+        results.sort(key=lambda x: (-x.relevance.score, x.experience.experience_id))
 
         return RetrievalResult(
             query=query,

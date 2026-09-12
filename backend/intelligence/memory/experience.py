@@ -14,6 +14,8 @@ class ExperienceEngine:
         assessment: OutcomeAssessment,
         feedback: Feedback,
         signal: LearningSignal,
+        incident_id: str | None = None,
+        environment: str | None = None,
     ) -> Experience:
         """
         Deterministically builds an Experience episode.
@@ -34,6 +36,9 @@ class ExperienceEngine:
         feedback_type = str(feedback.feedback_type)
         learning_signal_type = str(signal.signal_type)
 
+        if not environment:
+            environment = "SIMULATED" if signal.is_simulated else "PRODUCTION"
+
         fingerprint = FingerprintGenerator.generate(
             target_component=execution.target,
             action_type=action_type,
@@ -43,9 +48,11 @@ class ExperienceEngine:
             feedback_type=feedback_type,
             learning_signal_type=learning_signal_type,
             is_simulated=signal.is_simulated,
+            environment=environment,
         )
 
         return Experience(
+            incident_id=incident_id,
             learning_signal_id=signal.signal_id,
             feedback_id=feedback.feedback_id,
             assessment_id=assessment.assessment_id,
@@ -60,5 +67,6 @@ class ExperienceEngine:
             feedback_type=feedback_type,
             learning_signal_type=learning_signal_type,
             is_simulated=signal.is_simulated,
+            environment=environment,
             fingerprint=fingerprint,
         )

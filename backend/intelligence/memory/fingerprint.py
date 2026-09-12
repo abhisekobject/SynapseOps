@@ -15,20 +15,22 @@ class FingerprintGenerator:
         feedback_type: str,
         learning_signal_type: str,
         is_simulated: bool,
+        environment: str,
     ) -> str:
         """
         Hashes the core semantic state of an episode.
         Does NOT include volatile IDs, timestamps, or metadata.
         """
         state_dict = {
-            "target_component": target_component,
             "action_type": action_type,
+            "environment": environment,
             "expected_outcome": expected_outcome,
+            "feedback_type": feedback_type,
+            "is_simulated": is_simulated,
+            "learning_signal_type": learning_signal_type,
             "observed_outcome": observed_outcome,
             "outcome_state": outcome_state,
-            "feedback_type": feedback_type,
-            "learning_signal_type": learning_signal_type,
-            "is_simulated": is_simulated,
+            "target_component": target_component,
         }
 
         # Deterministic JSON serialization

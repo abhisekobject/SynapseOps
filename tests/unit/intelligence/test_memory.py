@@ -175,3 +175,84 @@ def test_retrieval_engine_ordering(experience_engine, retrieval_engine, valid_li
     # Partial match should be second (score 15 for just action match)
     assert result.results[1].experience.experience_id == exp_partial.experience_id
     assert result.results[1].relevance.score == 15
+
+
+def test_retrieval_engine_environment_match(experience_engine, retrieval_engine, valid_lineage):
+    execution, assessment, feedback, signal = valid_lineage
+    exp = experience_engine.build_experience(execution, assessment, feedback, signal, environment="PRODUCTION")
+
+    query = RetrievalQuery(
+        target_component="payment-service",
+        environment="PRODUCTION"
+    )
+
+    result = retrieval_engine.retrieve(query, [exp])
+    assert len(result.results) == 1
+    assert result.results[0].relevance.score == 30 # target (+20) + environment (+10)
+
+
+def test_retrieval_engine_tie_breaking(experience_engine, retrieval_engine, valid_lineage):
+    execution, assessment, feedback, signal = valid_lineage
+
+    # Create two identical experiences (they will get different experience_ids but same semantic content)
+    exp1 = experience_engine.build_experience(execution, assessment, feedback, signal)
+    exp2 = experience_engine.build_experience(execution, assessment, feedback, signal)
+
+    query = RetrievalQuery(
+        target_component="payment-service"
+    )
+
+    # Pass in random order
+    result = retrieval_engine.retrieve(query, [exp2, exp1])
+
+    assert len(result.results) == 2
+    assert result.results[0].relevance.score == result.results[1].relevance.score
+
+    # Must be ordered by experience_id ASC ascending for tie breaker
+    assert result.results[0].experience.experience_id < result.results[1].experience.experience_id
+
+
+def test_fingerprint_determinism():
+    from backend.intelligence.memory.fingerprint import FingerprintGenerator
+
+    # Same inputs must produce exact same hash
+    hash1 = FingerprintGenerator.generate(
+        target_component="svc-a",
+        action_type="restart",
+        expected_outcome="ok",
+        observed_outcome="ok",
+        outcome_state="VERIFIED_SUCCESS",
+        feedback_type="SUCCESS_CONFIRMATION",
+        learning_signal_type="POSITIVE_EXPERIENCE",
+        is_simulated=False,
+        environment="PRODUCTION"
+    )
+
+    hash2 = FingerprintGenerator.generate(
+        target_component="svc-a",
+        action_type="restart",
+        expected_outcome="ok",
+        observed_outcome="ok",
+        outcome_state="VERIFIED_SUCCESS",
+        feedback_type="SUCCESS_CONFIRMATION",
+        learning_signal_type="POSITIVE_EXPERIENCE",
+        is_simulated=False,
+        environment="PRODUCTION"
+    )
+
+    assert hash1 == hash2
+
+    # Small change produces totally different hash
+    hash3 = FingerprintGenerator.generate(
+        target_component="svc-a",
+        action_type="restart",
+        expected_outcome="ok",
+        observed_outcome="ok",
+        outcome_state="VERIFIED_SUCCESS",
+        feedback_type="SUCCESS_CONFIRMATION",
+        learning_signal_type="POSITIVE_EXPERIENCE",
+        is_simulated=False,
+        environment="STAGING"
+    )
+
+    assert hash1 != hash3

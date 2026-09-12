@@ -13,6 +13,7 @@ class Experience(BaseModel):
     experience_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
 
     # Lineage IDs
+    incident_id: str | None = None
     learning_signal_id: str
     feedback_id: str
     assessment_id: str
@@ -20,19 +21,24 @@ class Experience(BaseModel):
     plan_id: str
     plan_hash: str
 
-    # Context
+    # Facts: What context the action was taken in
     target_component: str
     action_type: str | RecoveryActionType
 
-    # Outcome Data
+    # Expectations: What was expected
     expected_outcome: str
+
+    # Observations: What was actually observed
     observed_outcome: str
+
+    # Assessment: What verification concluded
     outcome_state: str | OutcomeState
     feedback_type: str | FeedbackType
     learning_signal_type: str | SignalType
 
     # Boundaries
     is_simulated: bool
+    environment: str = Field(description="E.g., SIMULATED, PRODUCTION")
     fingerprint: str
 
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
@@ -42,6 +48,7 @@ class Experience(BaseModel):
 
 class RetrievalQuery(BaseModel):
     """A structured query for retrieving historical experiences."""
+    incident_id: str | None = None
     target_component: str | None = None
     action_type: str | RecoveryActionType | None = None
     expected_outcome: str | None = None
@@ -50,6 +57,7 @@ class RetrievalQuery(BaseModel):
     feedback_type: str | FeedbackType | None = None
     learning_signal_type: str | SignalType | None = None
     is_simulated: bool | None = None
+    environment: str | None = None
 
 
 class RelevanceScore(BaseModel):

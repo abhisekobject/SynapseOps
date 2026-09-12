@@ -23,6 +23,8 @@ async def create_experience(
     assessment: OutcomeAssessment,
     feedback: Feedback,
     signal: LearningSignal,
+    incident_id: str | None = None,
+    environment: str | None = None,
 ) -> dict:
     """
     Creates an Experience representing a historical episode.
@@ -45,6 +47,8 @@ async def create_experience(
             assessment=assessment,
             feedback=feedback,
             signal=signal,
+            incident_id=incident_id,
+            environment=environment,
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e)) from e
