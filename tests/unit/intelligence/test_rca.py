@@ -116,3 +116,36 @@ class TestRCAEngine:
         result = engine.analyze(events)
         assert result.candidates[0].component == "sim-api"
         assert result.candidates[1].component == "sim-worker"
+
+    def test_redis_degradation(self):
+        """Scenario C: Redis degradation -> Worker cascade"""
+        graph = DependencyGraph()
+        engine = RCAEngine(graph)
+
+        events = [
+            make_event(EventType.ANOMALY_LATENCY, "redis", EventSeverity.WARNING, 5),
+            make_event(EventType.ANOMALY_LATENCY, "sim-worker", EventSeverity.WARNING, 3),
+        ]
+
+        result = engine.analyze(events, window_minutes=15)
+        top = result.candidates[0]
+        assert top.component == "redis"
+        assert "sim-worker" in top.affected_components
+
+    def test_missing_telemetry(self):
+        """Scenario G: Missing telemetry"""
+        # Missing telemetry does not fabricate events, but Phase 5 emits [Stale Telemetry] events.
+        # It's just a regular event that stays ACTIVE.
+        graph = DependencyGraph()
+        engine = RCAEngine(graph)
+
+        events = [
+            make_event(EventType.ANOMALY_CPU, "sim-worker", EventSeverity.CRITICAL, 10),
+            # Telemetry goes missing, so anomaly stays active (updated_at keeps moving forward in Phase 5).
+        ]
+
+        result = engine.analyze(events, window_minutes=15)
+        top = result.candidates[0]
+        assert top.component == "sim-worker"
+        assert len(top.affected_components) == 0
+
