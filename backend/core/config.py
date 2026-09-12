@@ -175,6 +175,24 @@ class Settings(BaseSettings):
         description="Fallback absolute deviation if historical variance (stddev) is zero",
     )
 
+    # --- Intelligence (Phase 7) ---
+    ai_provider: str = Field(
+        default="mock",
+        description="AI reasoning provider (mock, openai)",
+    )
+    ai_api_key: str | None = Field(
+        default=None,
+        description="API key for the AI provider",
+    )
+    ai_model: str = Field(
+        default="gpt-4o-mini",
+        description="Model name to use for AI reasoning",
+    )
+    ai_request_timeout_seconds: int = Field(
+        default=30,
+        description="Timeout for AI reasoning requests",
+    )
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def database_url(self) -> str:

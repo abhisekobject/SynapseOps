@@ -55,7 +55,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info(
         "SynapseOps starting",
         environment=settings.environment,
-        phase="Phase 6 — Root Cause & Dependency Intelligence",
+        phase="Phase 7 — AI Incident Reasoning",
     )
 
     # --- Startup ---
@@ -73,12 +73,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     )
     failure_controller.start_expiry_task()
 
-    # Phase 4, 5, 6: Intelligence Engines
+    # Phase 4, 5, 6, 7: Intelligence Engines
     from backend.events.engine import EventEngine
     from backend.events.normalizer import TelemetryNormalizer
     from backend.intelligence.anomaly import AnomalyDetector
     from backend.intelligence.graph import DependencyGraph
     from backend.intelligence.rca import RCAEngine
+    from backend.intelligence.reasoning.providers import (
+        MockReasoningProvider,
+        OpenAIReasoningProvider,
+    )
     from backend.state.engine import SystemStateEngine
     from backend.telemetry.ingestion import TelemetryPoller
 
@@ -108,6 +112,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     dependency_graph = DependencyGraph()
     app.state.dependency_graph = dependency_graph
     app.state.rca_engine = RCAEngine(graph=dependency_graph)
+
+    if settings.ai_provider == "openai":
+        app.state.reasoning_provider = OpenAIReasoningProvider(settings)
+    else:
+        app.state.reasoning_provider = MockReasoningProvider()
 
     logger.info("SynapseOps startup complete")
 
