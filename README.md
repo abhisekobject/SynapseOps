@@ -2,8 +2,9 @@
 
 **Autonomous Infrastructure Intelligence & Self-Healing System**
 
-> ⚠️ **Current Status: Phase 1 — Project Foundation**
-> The application foundation is implemented and runnable. Detection, diagnosis, planning, and autonomous recovery are not yet implemented.
+> 🟡 **Current Status: Phase 3 — Observability & Telemetry**  
+> Prometheus metrics, OpenTelemetry tracing (Jaeger), and request correlation are implemented.  
+> Detection, diagnosis, planning, and autonomous recovery are not yet implemented.
 
 ---
 
@@ -21,7 +22,7 @@ This is a personal engineering project built for serious learning, systems think
 
 ---
 
-## Current Phase: Phase 1 — Project Foundation
+## Current Phase: Phase 3 — Observability & Telemetry
 
 ### What exists now
 
@@ -36,17 +37,21 @@ This is a personal engineering project built for serious learning, systems think
 | Redis integration layer | ✅ |
 | Structured application logging (structlog) | ✅ |
 | Exception handling — no internal error leakage | ✅ |
-| Unit test suite (pytest) | ✅ |
+| Unit test suite (pytest) — 207 tests | ✅ |
 | Linting and formatting (Ruff) | ✅ |
 | Docker Compose local development stack | ✅ |
 | OpenAPI documentation (`/docs`, `/redoc`) | ✅ |
+| Infrastructure simulator (gateway, API, worker) | ✅ Phase 2 |
+| Failure injection API + named scenario library | ✅ Phase 2 |
+| Prometheus metrics (`/metrics`, custom registry) | ✅ Phase 3 |
+| OpenTelemetry tracing → Jaeger (OTLP gRPC) | ✅ Phase 3 |
+| Request correlation (X-Request-ID + structlog context) | ✅ Phase 3 |
+| Grafana dashboard (pre-provisioned) | ✅ Phase 3 |
 
 ### What is NOT implemented yet
 
 | Capability | Planned Phase |
 |---|---|
-| Infrastructure simulator | Phase 2 |
-| Prometheus / Grafana / OpenTelemetry | Phase 3 |
 | System state engine | Phase 4 |
 | Anomaly detection (statistical / ML) | Phase 5 |
 | Dependency graph and root cause analysis | Phase 6 |

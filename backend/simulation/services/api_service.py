@@ -61,9 +61,7 @@ class ApiService(SimulatedServiceBase):
         baseline_ms = random.uniform(15.0, 40.0)
         await asyncio.sleep(baseline_ms / 1000.0)
 
-        self._active_connections = max(
-            0, self._baseline_connections + random.randint(-20, 20)
-        )
+        self._active_connections = max(0, self._baseline_connections + random.randint(-20, 20))
 
         return {
             "service": self.service_name,

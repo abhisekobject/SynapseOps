@@ -69,6 +69,62 @@ class Settings(BaseSettings):
         description="Interval (seconds) between simulated service health polls",
     )
 
+    # --- Observability (Phase 3) ---
+    otel_enabled: bool = Field(
+        default=True,
+        description="Enable OpenTelemetry tracing",
+    )
+    otel_service_name: str = Field(
+        default="synapseops-api",
+        description="OTel service name (used as trace service identifier)",
+    )
+    otel_service_version: str = Field(
+        default="0.1.0",
+        description="OTel service version",
+    )
+    otel_exporter_otlp_endpoint: str = Field(
+        default="http://localhost:4317",
+        description="OTLP gRPC exporter endpoint (e.g. http://jaeger:4317)",
+    )
+    otel_exporter_otlp_insecure: bool = Field(
+        default=True,
+        description="Use insecure (plaintext) gRPC for OTLP export",
+    )
+    prometheus_enabled: bool = Field(
+        default=True,
+        description="Enable Prometheus metrics endpoint at /metrics",
+    )
+
+    # --- Intelligence (Phase 4) ---
+    latency_warning_threshold_ms: float = Field(
+        default=300.0,
+        description="Threshold (ms) for WARNING latency events",
+    )
+    latency_critical_threshold_ms: float = Field(
+        default=800.0,
+        description="Threshold (ms) for CRITICAL latency events",
+    )
+    error_rate_warning_threshold: float = Field(
+        default=1.0,
+        description="Threshold (%) for WARNING error rate events",
+    )
+    error_rate_critical_threshold: float = Field(
+        default=5.0,
+        description="Threshold (%) for CRITICAL error rate events",
+    )
+    queue_warning_threshold: int = Field(
+        default=10,
+        description="Threshold for WARNING queue depth events",
+    )
+    queue_critical_threshold: int = Field(
+        default=30,
+        description="Threshold for CRITICAL queue depth events",
+    )
+    state_staleness_seconds: int = Field(
+        default=15,
+        description="Time (seconds) without telemetry before a service is UNKNOWN",
+    )
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def database_url(self) -> str:

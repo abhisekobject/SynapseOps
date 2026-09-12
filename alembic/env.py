@@ -25,8 +25,10 @@ from backend.models.db.anomaly import AnomalyORM  # noqa: F401
 # Import ALL ORM models so Alembic can detect them via Base.metadata.
 # Every new ORM model added in future phases must be imported here.
 from backend.models.db.base import Base
+from backend.models.db.event import EventORM  # noqa: F401
 from backend.models.db.incident import IncidentORM  # noqa: F401
 from backend.models.db.outcome import OutcomeORM  # noqa: F401
+from backend.models.db.state import StateTransitionORM  # noqa: F401
 
 # Alembic Config object
 config = context.config

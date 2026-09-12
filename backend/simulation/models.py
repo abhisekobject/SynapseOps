@@ -264,9 +264,7 @@ class ServiceHealthSnapshot(BaseModel):
     """
 
     service_name: str = Field(description="Identifier of this simulated service")
-    status: str = Field(
-        description="Overall service status: 'healthy', 'degraded', or 'crashed'"
-    )
+    status: str = Field(description="Overall service status: 'healthy', 'degraded', or 'crashed'")
     active_failure_types: list[str] = Field(
         default_factory=list,
         description="Names of failure types currently applied to this service",

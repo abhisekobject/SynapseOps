@@ -1,0 +1,227 @@
+{
+  "uid": "synapseops-overview",
+  "title": "SynapseOps — Infrastructure Overview",
+  "description": "Phase 3 observability dashboard showing request rates, latency, error rates, queue depth, and service availability across all simulated services.",
+  "tags": ["synapseops", "phase3"],
+  "timezone": "browser",
+  "refresh": "15s",
+  "time": { "from": "now-15m", "to": "now" },
+  "schemaVersion": 38,
+  "panels": [
+    {
+      "id": 1,
+      "type": "row",
+      "title": "Request Metrics",
+      "gridPos": { "x": 0, "y": 0, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 2,
+      "title": "Request Rate (req/s)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 1, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "rate(sim_gateway_requests_per_second[1m])",
+          "legendFormat": "gateway"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "rate(sim_api_requests_per_second[1m])",
+          "legendFormat": "api"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "rate(sim_worker_requests_per_second[1m])",
+          "legendFormat": "worker"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "reqps", "min": 0 }
+      }
+    },
+    {
+      "id": 3,
+      "title": "Error Rate (%)",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 1, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_gateway_error_rate_percent",
+          "legendFormat": "gateway"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_api_error_rate_percent",
+          "legendFormat": "api"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_worker_error_rate_percent",
+          "legendFormat": "worker"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percent", "min": 0, "max": 100 }
+      }
+    },
+    {
+      "id": 4,
+      "title": "p99 Request Latency (ms)",
+      "type": "timeseries",
+      "gridPos": { "x": 0, "y": 9, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_gateway_request_latency_p99_ms",
+          "legendFormat": "gateway p99"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_api_request_latency_p99_ms",
+          "legendFormat": "api p99"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_worker_request_latency_p99_ms",
+          "legendFormat": "worker p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "ms", "min": 0 }
+      }
+    },
+    {
+      "id": 5,
+      "title": "Queue Depth",
+      "type": "timeseries",
+      "gridPos": { "x": 12, "y": 9, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_worker_queue_depth",
+          "legendFormat": "worker queue depth"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "short", "min": 0 }
+      }
+    },
+    {
+      "id": 6,
+      "type": "row",
+      "title": "Service Health",
+      "gridPos": { "x": 0, "y": 17, "w": 24, "h": 1 },
+      "collapsed": false
+    },
+    {
+      "id": 7,
+      "title": "Service Availability (1=healthy, 0=degraded)",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 18, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_gateway_healthy",
+          "legendFormat": "gateway"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DEGRADED", "color": "red" }, "1": { "text": "HEALTHY", "color": "green" } } }
+          ],
+          "thresholds": { "steps": [{ "value": 0, "color": "red" }, { "value": 1, "color": "green" }] }
+        }
+      }
+    },
+    {
+      "id": 8,
+      "title": "Service Availability (1=healthy, 0=degraded)",
+      "type": "stat",
+      "gridPos": { "x": 8, "y": 18, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_api_healthy",
+          "legendFormat": "api"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DEGRADED", "color": "red" }, "1": { "text": "HEALTHY", "color": "green" } } }
+          ],
+          "thresholds": { "steps": [{ "value": 0, "color": "red" }, { "value": 1, "color": "green" }] }
+        }
+      }
+    },
+    {
+      "id": 9,
+      "title": "Service Availability (1=healthy, 0=degraded)",
+      "type": "stat",
+      "gridPos": { "x": 16, "y": 18, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_worker_healthy",
+          "legendFormat": "worker"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "DEGRADED", "color": "red" }, "1": { "text": "HEALTHY", "color": "green" } } }
+          ],
+          "thresholds": { "steps": [{ "value": 0, "color": "red" }, { "value": 1, "color": "green" }] }
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Active Failure Scenarios",
+      "type": "stat",
+      "gridPos": { "x": 0, "y": 22, "w": 8, "h": 4 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "synapseops_active_failures_total",
+          "legendFormat": "active failures"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "steps": [{ "value": 0, "color": "green" }, { "value": 1, "color": "orange" }, { "value": 3, "color": "red" }] }
+        }
+      }
+    },
+    {
+      "id": 11,
+      "title": "CPU Utilisation (%)",
+      "type": "timeseries",
+      "gridPos": { "x": 8, "y": 22, "w": 16, "h": 4 },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_gateway_cpu_percent",
+          "legendFormat": "gateway"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_api_cpu_percent",
+          "legendFormat": "api"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "prometheus" },
+          "expr": "sim_worker_cpu_percent",
+          "legendFormat": "worker"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "percent", "min": 0, "max": 100 }
+      }
+    }
+  ]
+}

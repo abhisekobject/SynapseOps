@@ -90,7 +90,9 @@ class TestGetSimulationState:
         response = client.get("/api/v1/simulation/state")
         assert response.status_code == 200
 
-    def test_state_response_has_active_scenarios(self, client: TestClient, mock_controller: MagicMock):
+    def test_state_response_has_active_scenarios(
+        self, client: TestClient, mock_controller: MagicMock
+    ):
         data = client.get("/api/v1/simulation/state").json()
         assert "active_scenarios" in data
         assert "total_active" in data
@@ -206,7 +208,9 @@ class TestClearFailures:
 
     def test_clear_with_target_body(self, client: TestClient, mock_controller: MagicMock):
         mock_controller.clear_failures = AsyncMock(
-            return_value=ClearFailuresResponse(cleared_count=1, message="Cleared 1 scenario for worker.")
+            return_value=ClearFailuresResponse(
+                cleared_count=1, message="Cleared 1 scenario for worker."
+            )
         )
         response = client.request(
             "DELETE",
@@ -260,7 +264,9 @@ class TestListScenarios:
 
 
 class TestActivateScenario:
-    def test_activate_known_scenario_returns_201(self, client: TestClient, mock_controller: MagicMock):
+    def test_activate_known_scenario_returns_201(
+        self, client: TestClient, mock_controller: MagicMock
+    ):
         response = client.post("/api/v1/simulation/scenarios/WORKER_CRASH/activate")
         assert response.status_code == 201
 
@@ -274,9 +280,15 @@ class TestActivateScenario:
 
     def test_activate_all_known_scenarios(self, client: TestClient, mock_controller: MagicMock):
         scenario_names = [
-            "WORKER_CRASH", "API_ERROR_RATE_SPIKE", "DB_CONNECTION_EXHAUSTION",
-            "CPU_PRESSURE_WORKER", "CASCADE_FAILURE", "GATEWAY_LATENCY",
-            "MEMORY_PRESSURE_API", "NETWORK_PARTITION_WORKER", "REDIS_TIMEOUT",
+            "WORKER_CRASH",
+            "API_ERROR_RATE_SPIKE",
+            "DB_CONNECTION_EXHAUSTION",
+            "CPU_PRESSURE_WORKER",
+            "CASCADE_FAILURE",
+            "GATEWAY_LATENCY",
+            "MEMORY_PRESSURE_API",
+            "NETWORK_PARTITION_WORKER",
+            "REDIS_TIMEOUT",
             "DOWNSTREAM_TIMEOUT",
         ]
         for name in scenario_names:

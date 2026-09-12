@@ -164,15 +164,11 @@ class WorkerService(SimulatedServiceBase):
         base_mem = random.uniform(100.0, 180.0)
 
         cpu_boost = sum(
-            f.severity * 65.0
-            for f in failures
-            if f.failure_type == FailureType.CPU_PRESSURE
+            f.severity * 65.0 for f in failures if f.failure_type == FailureType.CPU_PRESSURE
         )
         # Network partition also causes CPU overhead (retries, timeouts)
         cpu_boost += sum(
-            f.severity * 15.0
-            for f in failures
-            if f.failure_type == FailureType.NETWORK_PARTITION
+            f.severity * 15.0 for f in failures if f.failure_type == FailureType.NETWORK_PARTITION
         )
         cpu = min(100.0, base_cpu + cpu_boost)
 

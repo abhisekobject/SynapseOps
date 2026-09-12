@@ -78,11 +78,15 @@ class TestFailureControllerInject:
 
     async def test_inject_multiple_scenarios(self, controller: FailureController):
         await controller.inject_failure(_make_inject_request(name="f1"))
-        await controller.inject_failure(_make_inject_request(name="f2", failure_type=FailureType.CRASH))
+        await controller.inject_failure(
+            _make_inject_request(name="f2", failure_type=FailureType.CRASH)
+        )
         state = await controller.get_state()
         assert state.total_active == 2
 
-    async def test_inject_publishes_to_redis(self, controller: FailureController, mock_redis: AsyncMock):
+    async def test_inject_publishes_to_redis(
+        self, controller: FailureController, mock_redis: AsyncMock
+    ):
         req = _make_inject_request()
         await controller.inject_failure(req)
         mock_redis.set.assert_called_once()

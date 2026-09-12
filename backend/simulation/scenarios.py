@@ -31,6 +31,7 @@ from backend.simulation.models import FailureTarget, FailureType, InjectFailureR
 # Scenario factories
 # ---------------------------------------------------------------------------
 
+
 def scenario_worker_crash() -> InjectFailureRequest:
     """Scenario 1: Worker service crash.
 

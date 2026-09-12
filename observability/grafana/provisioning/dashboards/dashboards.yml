@@ -1,0 +1,16 @@
+# =============================================================================
+# Grafana Dashboard Provisioning (Phase 3)
+# =============================================================================
+apiVersion: 1
+
+providers:
+  - name: SynapseOps
+    orgId: 1
+    folder: "SynapseOps"
+    folderUid: "synapseops"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards

@@ -1,7 +1,7 @@
 # =============================================================================
-# SynapseOps — Docker Compose (Local Development)
+# SynapseOps -- Docker Compose (Local Development)
 #
-# Phase 2: Infrastructure Simulation Environment
+# Phase 3: Observability & Telemetry
 #
 # Core SynapseOps services:
 #   - api          : SynapseOps FastAPI backend           :8000
@@ -13,14 +13,23 @@
 #   - sim-api      : Simulated API service                :8101
 #   - sim-worker   : Simulated worker service             :8102
 #
+# Observability stack (Phase 3):
+#   - prometheus   : Metrics scraping & storage           :9090
+#   - grafana      : Metrics visualisation                :3000
+#   - jaeger       : Distributed trace backend            :16686 (UI)
+#                                                         :4317  (OTLP gRPC)
+#
 # Usage:
-#   Start all services:   docker-compose up -d
-#   View logs:            docker-compose logs -f api
+#   Start all:            docker compose up -d
+#   View logs:            docker compose logs -f api
+#   Prometheus UI:        http://localhost:9090
+#   Grafana UI:           http://localhost:3000  (admin / admin)
+#   Jaeger UI:            http://localhost:16686
 #   Inject a failure:     curl -X POST http://localhost:8000/api/v1/simulation/scenarios/WORKER_CRASH/activate
 #   Check sim health:     curl http://localhost:8000/api/v1/simulation/services/health
 #   Clear failures:       curl -X DELETE http://localhost:8000/api/v1/simulation/failures
-#   Stop all:             docker-compose down
-#   Destroy volumes:      docker-compose down -v
+#   Stop all:             docker compose down
+#   Destroy volumes:      docker compose down -v
 # =============================================================================
 
 services:
@@ -93,6 +102,13 @@ services:
       SIM_API_URL: http://sim-api:8101
       SIM_WORKER_URL: http://sim-worker:8102
       SIM_FAILURE_REDIS_KEY: sim:failures
+      # Observability (Phase 3)
+      OTEL_ENABLED: "true"
+      OTEL_SERVICE_NAME: synapseops-api
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_EXPORTER_OTLP_INSECURE: "true"
+      OTEL_RESOURCE_ATTRIBUTES: "service.version=0.1.0,deployment.environment=${ENVIRONMENT:-development}"
+      PROMETHEUS_ENABLED: "true"
     depends_on:
       postgres:
         condition: service_healthy
@@ -129,6 +145,11 @@ services:
       REDIS_PORT: 6379
       REDIS_DB: ${REDIS_DB:-0}
       SIM_FAILURE_REDIS_KEY: sim:failures
+      # Observability (Phase 3)
+      OTEL_ENABLED: "true"
+      OTEL_SERVICE_NAME: synapseops-sim-gateway
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_EXPORTER_OTLP_INSECURE: "true"
     depends_on:
       redis:
         condition: service_healthy
@@ -163,6 +184,11 @@ services:
       REDIS_PORT: 6379
       REDIS_DB: ${REDIS_DB:-0}
       SIM_FAILURE_REDIS_KEY: sim:failures
+      # Observability (Phase 3)
+      OTEL_ENABLED: "true"
+      OTEL_SERVICE_NAME: synapseops-sim-api
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_EXPORTER_OTLP_INSECURE: "true"
     depends_on:
       redis:
         condition: service_healthy
@@ -197,6 +223,11 @@ services:
       REDIS_PORT: 6379
       REDIS_DB: ${REDIS_DB:-0}
       SIM_FAILURE_REDIS_KEY: sim:failures
+      # Observability (Phase 3)
+      OTEL_ENABLED: "true"
+      OTEL_SERVICE_NAME: synapseops-sim-worker
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_EXPORTER_OTLP_INSECURE: "true"
     depends_on:
       redis:
         condition: service_healthy
@@ -207,8 +238,95 @@ services:
       retries: 3
       start_period: 8s
 
+  # ---------------------------------------------------------------------------
+  # Prometheus -- Metrics scraping and storage (Phase 3)
+  # ---------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: synapseops-prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=7d"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--web.enable-lifecycle"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # Grafana -- Metrics visualisation (Phase 3)
+  # ---------------------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: synapseops-grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_HTTP_PORT: 3000
+    volumes:
+      - ./observability/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  # ---------------------------------------------------------------------------
+  # Jaeger -- Distributed trace backend (Phase 3)
+  #
+  # All-in-one image for local development:
+  #   :16686 -- Jaeger UI (human-readable trace browser)
+  #   :4317  -- OTLP gRPC receiver (services export traces here)
+  #   :4318  -- OTLP HTTP receiver
+  # ---------------------------------------------------------------------------
+  jaeger:
+    image: jaegertracing/all-in-one:1.62
+    container_name: synapseops-jaeger
+    restart: unless-stopped
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+      SPAN_STORAGE_TYPE: memory
+      MEMORY_MAX_TRACES: "10000"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:16686/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
 volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
     driver: local

@@ -1,0 +1,67 @@
+# =============================================================================
+# SynapseOps — Prometheus Configuration (Phase 3)
+#
+# Scrapes metrics from:
+#   - synapseops-api   : main FastAPI backend  (:8000/metrics)
+#   - sim-gateway      : simulated gateway     (:8100/metrics)
+#   - sim-api          : simulated API service (:8101/metrics)
+#   - sim-worker       : simulated worker      (:8102/metrics)
+#
+# Services are addressed by Docker Compose service name (internal DNS).
+# =============================================================================
+
+global:
+  scrape_interval: 15s       # How often to scrape targets
+  evaluation_interval: 15s   # How often to evaluate rules
+  scrape_timeout: 10s
+
+  # Labels added to every time series scraped by this Prometheus instance
+  external_labels:
+    environment: "development"
+    project: "synapseops"
+
+# =============================================================================
+# Scrape configurations
+# =============================================================================
+scrape_configs:
+
+  # ---------------------------------------------------------------------------
+  # SynapseOps main API — prometheus_client instrumented
+  # ---------------------------------------------------------------------------
+  - job_name: "synapseops-api"
+    static_configs:
+      - targets: ["api:8000"]
+        labels:
+          service: "synapseops-api"
+    metrics_path: /metrics
+
+  # ---------------------------------------------------------------------------
+  # Simulated services — hand-rolled Prometheus text format
+  # ---------------------------------------------------------------------------
+  - job_name: "sim-gateway"
+    static_configs:
+      - targets: ["sim-gateway:8100"]
+        labels:
+          service: "sim-gateway"
+    metrics_path: /metrics
+
+  - job_name: "sim-api"
+    static_configs:
+      - targets: ["sim-api:8101"]
+        labels:
+          service: "sim-api"
+    metrics_path: /metrics
+
+  - job_name: "sim-worker"
+    static_configs:
+      - targets: ["sim-worker:8102"]
+        labels:
+          service: "sim-worker"
+    metrics_path: /metrics
+
+  # ---------------------------------------------------------------------------
+  # Prometheus self-monitoring
+  # ---------------------------------------------------------------------------
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

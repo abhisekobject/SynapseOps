@@ -75,7 +75,9 @@ class FailureController:
     # ------------------------------------------------------------------
 
     @classmethod
-    def create(cls, redis_client: Redis, redis_failure_key: str = _REDIS_FAILURE_KEY) -> FailureController:
+    def create(
+        cls, redis_client: Redis, redis_failure_key: str = _REDIS_FAILURE_KEY
+    ) -> FailureController:
         """Create a FailureController instance.
 
         Args:
@@ -247,11 +249,7 @@ class FailureController:
         the in-memory state remains the authoritative source.
         """
         try:
-            payload = [
-                s.model_dump(mode="json")
-                for s in self._scenarios.values()
-                if s.active
-            ]
+            payload = [s.model_dump(mode="json") for s in self._scenarios.values() if s.active]
             await self._redis.set(self._redis_failure_key, json.dumps(payload))
         except Exception as exc:
             logger.warning(
@@ -270,11 +268,7 @@ class FailureController:
         expired_count = 0
 
         async with self._lock:
-            to_expire = [
-                sid
-                for sid, s in self._scenarios.items()
-                if s.is_expired(now=now)
-            ]
+            to_expire = [sid for sid, s in self._scenarios.items() if s.is_expired(now=now)]
             if to_expire:
                 for sid in to_expire:
                     del self._scenarios[sid]

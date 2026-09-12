@@ -46,7 +46,10 @@ class GatewayService(SimulatedServiceBase):
     service_name = "sim-gateway"
 
     from backend.simulation.models import FailureTarget
-    target = __import__("backend.simulation.models", fromlist=["FailureTarget"]).FailureTarget.GATEWAY
+
+    target = __import__(
+        "backend.simulation.models", fromlist=["FailureTarget"]
+    ).FailureTarget.GATEWAY
 
     def __init__(self, redis_client: Redis, redis_failure_key: str = "sim:failures") -> None:
         super().__init__(redis_client=redis_client, redis_failure_key=redis_failure_key)
@@ -67,9 +70,7 @@ class GatewayService(SimulatedServiceBase):
         await asyncio.sleep(baseline_ms / 1000.0)
 
         # Simulate active connection count fluctuation
-        self._active_connections = max(
-            0, self._baseline_connections + random.randint(-10, 10)
-        )
+        self._active_connections = max(0, self._baseline_connections + random.randint(-10, 10))
 
         return {
             "service": self.service_name,
@@ -106,6 +107,7 @@ class GatewayService(SimulatedServiceBase):
 # ---------------------------------------------------------------------------
 # Application factory
 # ---------------------------------------------------------------------------
+
 
 def create_app() -> FastAPI:
     """Create the gateway FastAPI application.

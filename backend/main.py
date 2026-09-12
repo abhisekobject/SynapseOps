@@ -24,6 +24,8 @@ from backend.core.errors import register_exception_handlers
 from backend.core.logging import configure_logging, get_logger
 from backend.db.engine import create_engine
 from backend.db.session import create_session_factory
+from backend.observability.middleware import RequestCorrelationMiddleware
+from backend.observability.tracing import configure_tracing, shutdown_tracing
 from backend.simulation.controller import FailureController
 
 settings = get_settings()
@@ -53,10 +55,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.info(
         "SynapseOps starting",
         environment=settings.environment,
-        phase="Phase 2 — Infrastructure Simulation",
+        phase="Phase 4 — System State & Event Intelligence",
     )
 
     # --- Startup ---
+    # Phase 3: Initialise OpenTelemetry tracing before serving requests
+    configure_tracing(settings)
+
     engine = create_engine(settings)
     session_factory = create_session_factory(engine)
     redis_client = create_redis_client(settings)
@@ -68,11 +73,32 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     )
     failure_controller.start_expiry_task()
 
+    # Phase 4: System State & Event Intelligence
+    from backend.events.engine import EventEngine
+    from backend.events.normalizer import TelemetryNormalizer
+    from backend.state.engine import SystemStateEngine
+    from backend.telemetry.ingestion import TelemetryPoller
+
+    telemetry_normalizer = TelemetryNormalizer(settings)
+    event_engine = EventEngine()
+    state_engine = SystemStateEngine(settings)
+
+    telemetry_poller = TelemetryPoller(
+        settings=settings,
+        normalizer=telemetry_normalizer,
+        event_engine=event_engine,
+        state_engine=state_engine,
+    )
+    telemetry_poller.start()
+
     # Attach to app.state so routes can access them via request.app.state
     app.state.engine = engine
     app.state.session_factory = session_factory
     app.state.redis_client = redis_client
     app.state.failure_controller = failure_controller
+
+    app.state.event_engine = event_engine
+    app.state.state_engine = state_engine
 
     logger.info("SynapseOps startup complete")
 
@@ -80,7 +106,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     # --- Shutdown ---
     logger.info("SynapseOps shutting down")
+    await telemetry_poller.stop()
     await failure_controller.stop()
+    shutdown_tracing()
     await engine.dispose()
     await close_redis_client(redis_client)
     logger.info("SynapseOps shutdown complete")
@@ -107,6 +135,9 @@ def create_app() -> FastAPI:
 
     # Register exception handlers
     register_exception_handlers(app)
+
+    # Phase 3: Request correlation ID + Prometheus metrics recording
+    app.add_middleware(RequestCorrelationMiddleware)
 
     # Register all API routes
     app.include_router(api_router)

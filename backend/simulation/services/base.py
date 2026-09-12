@@ -41,7 +41,9 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import json
+import logging
 import math
+import os
 import random
 import time
 from collections import deque
@@ -57,6 +59,49 @@ from backend.simulation.models import (
     FailureType,
     ServiceHealthSnapshot,
 )
+
+_sim_logger = logging.getLogger(__name__)
+
+
+def _setup_otel_for_service(app: FastAPI, service_name: str) -> None:
+    """Attach OpenTelemetry tracing to a simulated service FastAPI app.
+
+    Uses standard OTel env vars so each service gets its own identity:
+        OTEL_SERVICE_NAME=synapseops-gateway  (set in docker-compose)
+        OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4317
+
+    Fail-safe: any exception during setup is logged and suppressed;
+    the service continues to operate without tracing.
+    """
+    if os.getenv("OTEL_ENABLED", "true").lower() in ("false", "0", "no"):
+        return
+    try:
+        from opentelemetry import trace
+        from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+        from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+        from opentelemetry.sdk.resources import SERVICE_NAME as OTEL_SERVICE_NAME
+        from opentelemetry.sdk.resources import Resource
+        from opentelemetry.sdk.trace import TracerProvider
+        from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
+        endpoint = os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4317")
+        resource = Resource.create({OTEL_SERVICE_NAME: service_name})
+        provider = TracerProvider(resource=resource)
+        exporter = OTLPSpanExporter(
+            endpoint=endpoint,
+            insecure=os.getenv("OTEL_EXPORTER_OTLP_INSECURE", "true").lower() != "false",
+        )
+        provider.add_span_processor(BatchSpanProcessor(exporter))
+        trace.set_tracer_provider(provider)
+        FastAPIInstrumentor.instrument_app(app, tracer_provider=provider)
+        _sim_logger.info("OTel tracing enabled for %s -> %s", service_name, endpoint)
+    except Exception as exc:
+        _sim_logger.warning(
+            "OTel setup failed for %s (%s); continuing without tracing",
+            service_name,
+            exc,
+        )
+
 
 # ---------------------------------------------------------------------------
 # Telemetry helpers
@@ -150,6 +195,9 @@ class SimulatedServiceBase:
             redoc_url=None,
         )
 
+        # Phase 3: Attach OTel tracing using the service's canonical name
+        _setup_otel_for_service(app, f"synapseops-{self.service_name}")
+
         @app.on_event("startup")
         async def _startup() -> None:
             self._start_time = time.monotonic()
@@ -224,8 +272,7 @@ class SimulatedServiceBase:
                 relevant = [
                     s
                     for s in scenarios
-                    if s.active
-                    and (s.target == self.target or s.target == FailureTarget.ALL)
+                    if s.active and (s.target == self.target or s.target == FailureTarget.ALL)
                 ]
             else:
                 relevant = []

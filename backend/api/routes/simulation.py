@@ -286,9 +286,7 @@ async def get_services_health(request: Request) -> JSONResponse:
                     "detail": f"{type(exc).__name__}: {exc}",
                 }
 
-    healthy_count = sum(
-        1 for s in snapshots.values() if s.get("status") == "healthy"
-    )
+    healthy_count = sum(1 for s in snapshots.values() if s.get("status") == "healthy")
 
     return JSONResponse(
         content={
