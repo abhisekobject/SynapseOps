@@ -137,6 +137,16 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     from backend.intelligence.outcomes.verification import VerificationEngine
     app.state.verification_engine = VerificationEngine()
 
+    from backend.intelligence.feedback.decision import DecisionEngine
+    from backend.intelligence.feedback.signals import SignalGenerator
+    app.state.decision_engine = DecisionEngine()
+    app.state.signal_generator = SignalGenerator()
+
+    from backend.intelligence.memory.experience import ExperienceEngine
+    from backend.intelligence.memory.retrieval import RetrievalEngine
+    app.state.experience_engine = ExperienceEngine()
+    app.state.retrieval_engine = RetrievalEngine()
+
     logger.info("SynapseOps startup complete")
 
     yield  # Application is running

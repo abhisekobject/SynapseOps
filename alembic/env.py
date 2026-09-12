@@ -27,7 +27,13 @@ from backend.models.db.anomaly import AnomalyORM  # noqa: F401
 from backend.models.db.base import Base
 from backend.models.db.event import EventORM  # noqa: F401
 from backend.models.db.execution import ExecutionRecordORM  # noqa: F401
+from backend.models.db.feedback import (  # noqa: F401
+    FeedbackRecordORM,
+    LearningDecisionRecordORM,
+    LearningSignalRecordORM,
+)
 from backend.models.db.incident import IncidentORM  # noqa: F401
+from backend.models.db.memory import ExperienceRecordORM  # noqa: F401
 from backend.models.db.observation import ObservationRecordORM, OutcomeAssessmentORM  # noqa: F401
 from backend.models.db.outcome import OutcomeORM  # noqa: F401
 from backend.models.db.safety import (  # noqa: F401
