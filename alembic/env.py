@@ -33,6 +33,10 @@ from backend.models.db.feedback import (  # noqa: F401
     LearningSignalRecordORM,
 )
 from backend.models.db.incident import IncidentORM  # noqa: F401
+from backend.models.db.learning import (  # noqa: F401
+    ExperienceLearningSignalORM,
+    OperationalKnowledgeORM,
+)
 from backend.models.db.memory import ExperienceRecordORM  # noqa: F401
 from backend.models.db.observation import ObservationRecordORM, OutcomeAssessmentORM  # noqa: F401
 from backend.models.db.outcome import OutcomeORM  # noqa: F401

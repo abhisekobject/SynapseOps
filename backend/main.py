@@ -147,6 +147,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     app.state.experience_engine = ExperienceEngine()
     app.state.retrieval_engine = RetrievalEngine()
 
+    from backend.intelligence.learning.aggregation import KnowledgeAggregator
+    from backend.intelligence.learning.engine import LearningEngine
+    app.state.learning_engine = LearningEngine()
+    app.state.knowledge_aggregator = KnowledgeAggregator()
+
     logger.info("SynapseOps startup complete")
 
     yield  # Application is running
