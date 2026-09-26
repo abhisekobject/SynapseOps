@@ -62,7 +62,31 @@ async def create_experience(
     }
 
 
+
+@router.get(
+    "/intelligence/memory/experiences",
+    response_model=dict,
+    summary="List all episodic experiences",
+)
+async def list_experiences(page: int = 1, limit: int = 50) -> dict:
+    """Returns a paginated list of all stored experiences."""
+    all_items = list(_MOCK_EXPERIENCE_STORE.values())
+    # Sort by timestamp descending (newest first)
+    all_items.sort(key=lambda e: e.timestamp, reverse=True)
+    total = len(all_items)
+    start = (page - 1) * limit
+    end = start + limit
+    items = all_items[start:end]
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "pages": max(1, (total + limit - 1) // limit),
+    }
+
+
 @router.get("/intelligence/memory/experiences/{experience_id}", response_model=Experience)
+
 async def get_experience(experience_id: str) -> Experience:
     if experience_id not in _MOCK_EXPERIENCE_STORE:
         raise HTTPException(status_code=404, detail="Experience not found")

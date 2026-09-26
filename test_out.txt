@@ -1,0 +1,1443 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.14.5, pytest-9.1.1, pluggy-1.6.0 -- /Users/abhisekpatra/Desktop/SynapseOps/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /Users/abhisekpatra/Desktop/SynapseOps
+configfile: pyproject.toml
+plugins: cov-7.1.0, asyncio-1.4.0, anyio-4.15.1
+asyncio: mode=Mode.AUTO, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 38 items
+
+tests/unit/intelligence/test_decision.py::TestDecisionContext::test_default_context_is_conservative PASSED [  2%]
+tests/unit/intelligence/test_decision.py::TestDecisionContext::test_environment_preserved PASSED [  5%]
+tests/unit/intelligence/test_decision.py::TestDecisionContext::test_rca_correctly_included PASSED [  7%]
+tests/unit/intelligence/test_decision.py::TestDecisionContext::test_deterministic_id_generation PASSED [ 10%]
+tests/unit/intelligence/test_decision.py::TestDecisionContext::test_deterministic_id_changes_with_services PASSED [ 13%]
+tests/unit/intelligence/test_decision.py::TestDecisionRetrieval::test_simulation_incident_only_uses_sim_evidence PASSED [ 15%]
+tests/unit/intelligence/test_decision.py::TestDecisionRetrieval::test_real_incident_excludes_sim_evidence_by_default PASSED [ 18%]
+tests/unit/intelligence/test_decision.py::TestDecisionRetrieval::test_mixed_mode_requires_explicit_opt_in PASSED [ 21%]
+tests/unit/intelligence/test_decision.py::TestDecisionRetrieval::test_irrelevant_action_type_excluded PASSED [ 23%]
+tests/unit/intelligence/test_decision.py::TestDecisionRetrieval::test_irrelevant_target_excluded PASSED [ 26%]
+tests/unit/intelligence/test_decision.py::TestDecisionRetrieval::test_cold_start_no_history PASSED [ 28%]
+tests/unit/intelligence/test_decision.py::TestDecisionRetrieval::test_conflicting_history_represented_honestly PASSED [ 31%]
+tests/unit/intelligence/test_decision.py::TestDecisionRetrieval::test_scenario_a_fake_success_not_verified PASSED [ 34%]
+tests/unit/intelligence/test_decision.py::TestDecisionScoring::test_same_input_same_score PASSED [ 36%]
+tests/unit/intelligence/test_decision.py::TestDecisionScoring::test_historical_evidence_affects_score PASSED [ 39%]
+tests/unit/intelligence/test_decision.py::TestDecisionScoring::test_high_risk_reduces_score PASSED [ 42%]
+tests/unit/intelligence/test_decision.py::TestDecisionScoring::test_rca_mismatch_reduces_score PASSED [ 44%]
+tests/unit/intelligence/test_decision.py::TestDecisionScoring::test_score_is_bounded_between_0_and_1 PASSED [ 47%]
+tests/unit/intelligence/test_decision.py::TestDecisionScoring::test_score_not_labeled_as_probability PASSED [ 50%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_cold_start_no_history PASSED [ 52%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_relevant_history_increases_candidate_score PASSED [ 55%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_determinism_same_inputs PASSED [ 57%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_candidates_ordered_by_score_descending PASSED [ 60%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_engine_never_raises PASSED [ 63%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_analysis_has_mandatory_caveats PASSED [ 65%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_scenario_b_simulation_evidence_excluded_from_real PASSED [ 68%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_scenario_c_current_rca_overrides_history PASSED [ 71%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_scenario_d_prompt_injection_treated_as_data PASSED [ 73%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_scenario_e_unsupported_action_cannot_be_generated PASSED [ 76%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_scenario_f_no_direct_execution FAILED [ 78%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_insufficient_evidence_status FAILED [ 81%]
+tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_adaptive_second_incident_uses_first_incident_evidence PASSED [ 84%]
+tests/unit/intelligence/test_decision.py::TestSecurityAudit::test_no_subprocess_in_decision_modules PASSED [ 86%]
+tests/unit/intelligence/test_decision.py::TestSecurityAudit::test_no_eval_exec_in_decision_modules FAILED [ 89%]
+tests/unit/intelligence/test_decision.py::TestSecurityAudit::test_candidate_actions_bounded_to_vocabulary PASSED [ 92%]
+tests/unit/intelligence/test_decision.py::TestLineageTraceability::test_experience_ids_appear_in_analysis PASSED [ 94%]
+tests/unit/intelligence/test_decision.py::TestLineageTraceability::test_incident_id_preserved_in_analysis PASSED [ 97%]
+tests/unit/intelligence/test_decision.py::TestLineageTraceability::test_rca_candidates_appear_in_lineage PASSED [100%]
+
+=================================== FAILURES ===================================
+____________ TestDecisionEngine.test_scenario_f_no_direct_execution ____________
+tests/unit/intelligence/test_decision.py:701: in test_scenario_f_no_direct_execution
+    assert pattern not in source, (
+E   AssertionError: Security violation: 'eval(' found in decision engine
+E   assert 'eval(' not in '"""\nPhase 16 — Adaptive Decision Intelligence: Decision Engine.\n\nThe main orchestrator that:\n  1. Accepts a DecisionContext (current incident evidence)\n  2. Retrieves relevant historical experiences (Phase 13)\n  3. Retrieves learning signals (Phase 14)\n  4. Retrieves operational knowledge (Phase 14)\n  5. Scores each bounded candidate action deterministically\n  6. Returns a DecisionAnalysis with explainable, honest candidates\n\nCRITICAL SAFETY BOUNDARIES (enforced architecturally):\n  - The engine NEVER calls any execution function.\n  - The engine NEVER calls any Safety/Policy function.\n  - The engine NEVER modifies any Experience, Signal, or Knowledge record.\n  - The engine NEVER generates shell commands or arbitrary strings as actions.\n  - Candidate actions come ONLY from RecoveryActionType vocabulary.\n  - Simulation/real isolation is enforced in DecisionRetrieval.\n"""\n\nfrom __future__ import annotations\n\nimport structlog\n\nfrom backend.intelligence.decision.models import (\n    DecisionAnalysis,\n    DecisionCandidate,\n    DecisionContext,\n    DecisionStatus,\n    EnvironmentContext,\n    generate_decision_id,\n)\nfrom backend.intelligence.decision.retrieval import DecisionRetrieval\nfrom backend.intelligence.decision.scoring import DecisionScorer\nfrom backend.intelligence.learning.models import (\n    ExperienceLearningSignal,\n    OperationalKnowledge,\n)\nfrom backend.intelligence.memory.models import Experience\nfrom backend.intelligence.recovery.actions import (\n    ACTION_REGISTRY,\n    RecoveryActionType,\n)\n\nlog = structlog.get_logger(__name__)\n\n# Maximum number of candidate (action_type, target) pairs to evaluate\n_MAX_CANDIDATE_PAIRS = 20\n\n\nclass DecisionEngine:\n    """\n    Phase 16 Adaptive Decision Intelligence engine.\n\n    ARCHITECTURAL POSITION:\n        Sits between Phase 7 (AI Reasoning) / Phase 8 (Recovery Planning)\n        and Phase 9 (Safety/Policy). Provides evidence-enriched candidate\n        evaluation but does NOT replace or bypass Safety.\n\n    INPUT: DecisionContext + historical evidence stores\n    OUTPUT: DecisionAnalysis with ranked, explainable candidates\n\n    BOUNDARY:\n        This class is a pure analysis engine.\n        It has no side effects on any other system component.\n    """\n\n    def __init__(self) -> None:\n        self._retrieval = DecisionRetrieval()\n        self._scorer = DecisionScorer()\n\n    def analyze(\n        self,\n        *,\n        context: DecisionContext,\n        experiences: list[Experience],\n        learning_signals: list[ExperienceLearningSignal],\n        operational_knowledge: list[OperationalKnowledge],\n    ) -> DecisionAnalysis:\n        """\n        Perform a complete decision intelligence analysis.\n\n        Args:\n            context: Current operational decision context.\n            experiences: All available Phase 13 episodic experiences.\n            learning_signals: All available Phase 14 learning signals.\n            operational_knowledge: All available Phase 14 knowledge records.\n\n        Returns:\n            A DecisionAnalysis with ranked, explainable, evidence-backed candidates.\n\n        Notes:\n            - Never raises; returns DecisionAnalysis with status=ERROR on failure.\n            - Deterministic: same inputs → same analysis.\n        """\n        log.info(\n            "decision_analysis_started",\n            incident_id=context.incident_id,\n            environment=context.environment,\n            affected_services=context.affected_services,\n            rca_candidates=context.rca_top_candidates,\n        )\n\n        try:\n            return self._run_analysis(\n                context=context,\n                experiences=experiences,\n                learning_signals=learning_signals,\n                operational_knowledge=operational_knowledge,\n            )\n        except Exception as exc:  # noqa: BLE001\n            log.error("decision_analysis_failed", error=str(exc), exc_info=True)\n            return DecisionAnalysis(\n                decision_id=generate_decision_id(\n                    incident_id=context.incident_id,\n                    environment=str(context.environment),\n                    is_simulated=context.is_simulated,\n                    affected_services=context.affected_services,\n                ),\n                incident_id=context.incident_id,\n                environment=context.environment,\n                is_simulated=context.is_simulated,\n                status=DecisionStatus.ERROR,\n                context_summary="Decision analysis failed due to an internal error.",\n                historical_evidence_available=False,\n                analysis_caveats=[\n                    "Decision analysis encountered an internal error. "\n                    "The system remains safe — no actions were taken.",\n                    "Historical evidence is not causal proof.",\n                ],\n                error_message=str(exc),\n            )\n\n    def _run_analysis(\n        self,\n        *,\n        context: DecisionContext,\n        experiences: list[Experience],\n        learning_signals: list[ExperienceLearningSignal],\n        operational_knowledge: list[OperationalKnowledge],\n    ) -> DecisionAnalysis:\n        """Inner implementation; exceptions propagate to analyze()."""\n\n        # Step 1: Determine candidate (action_type, target) pairs from context\n        candidate_pairs = self._enumerate_candidate_pairs(context)\n\n        if not candidate_pairs:\n            return DecisionAnalysis(\n                decision_id=generate_decision_id(\n                    incident_id=context.incident_id,\n                    environment=str(context.environment),\n                    is_simulated=context.is_simulated,\n                    affected_services=context.affected_services,\n                ),\n                incident_id=context.incident_id,\n                environment=context.environment,\n                is_simulated=context.is_simulated,\n                status=DecisionStatus.NO_CANDIDATES,\n                context_summary=self._build_context_summary(context),\n                historical_evidence_available=False,\n                analysis_caveats=[\n                    "No candidate action/target pairs could be identified from current evidence.",\n                    "Historical evidence is not causal proof.",\n                    "Decision relevance scores are not probabilities.",\n                ],\n            )\n\n        # Step 2: Score each candidate pair\n        all_experience_ids: list[str] = []\n        all_candidates: list[DecisionCandidate] = []\n\n        for action_type, target_component in candidate_pairs[:_MAX_CANDIDATE_PAIRS]:\n            # Retrieve historical evidence for this specific (action, target)\n            evidence = self._retrieval.retrieve_evidence(\n                action_type=action_type,\n                target_component=target_component,\n                current_is_simulated=context.is_simulated,\n                allow_simulation_evidence=context.allow_simulation_evidence,\n                experiences=experiences,\n                learning_signals=learning_signals,\n                operational_knowledge=operational_knowledge,\n                min_evidence_threshold=context.min_evidence_threshold,\n            )\n            all_experience_ids.extend(evidence.contributing_experience_ids)\n\n            # Build scored candidate\n            candidate = self._scorer.build_candidate(\n                action_type=action_type,\n                target_component=target_component,\n                rca_candidates=context.rca_top_candidates,\n                rca_scores=context.rca_candidate_scores,\n                reasoning_recommended=context.reasoning_recommended_actions,\n                historical_evidence=evidence,\n                current_environment=context.environment,\n                allow_simulation_evidence=context.allow_simulation_evidence,\n            )\n            all_candidates.append(candidate)\n\n        # Step 3: Sort candidates deterministically\n        # Primary: score descending\n        # Secondary: action_type ascending (lexicographic — deterministic tie-break)\n        # Tertiary: target_component ascending\n        all_candidates.sort(\n            key=lambda c: (\n                -c.decision_relevance_score,\n                str(c.action_type),\n                c.target_component,\n            )\n        )\n\n        # Limit to max_candidates\n        all_candidates = all_candidates[: context.max_candidates]\n\n        # Step 4: Identify eligible candidates\n        eligible = [c for c in all_candidates if c.eligibility.startswith("ELIGIBLE")]\n\n        # Step 5: Determine top candidate (most relevant eligible candidate)\n        top_candidate = eligible[0] if eligible else None\n\n        # Step 6: Determine overall status\n        if not eligible:\n            status = DecisionStatus.NO_CANDIDATES\n        elif all(\n            not c.historical_evidence.is_sufficient for c in all_candidates\n        ):\n            status = DecisionStatus.INSUFFICIENT_EVIDENCE\n        else:\n            status = DecisionStatus.ANALYZED\n\n        # Step 7: Determine evidence environment context\n        evidence_envs = {c.historical_evidence.environment_context for c in all_candidates}\n        if len(evidence_envs) == 1:\n            historical_env = next(iter(evidence_envs))\n        elif evidence_envs:\n            historical_env = EnvironmentContext.MIXED\n        else:\n            historical_env = None\n\n        has_evidence = any(\n            c.historical_evidence.experience_count > 0 for c in all_candidates\n        )\n\n        log.info(\n            "decision_analysis_complete",\n            incident_id=context.incident_id,\n            status=status,\n            candidate_count=len(all_candidates),\n            eligible_count=len(eligible),\n            top_candidate=str(top_candidate.action_type) if top_candidate else None,\n        )\n\n        return DecisionAnalysis(\n            decision_id=generate_decision_id(\n                incident_id=context.incident_id,\n                environment=str(context.environment),\n                is_simulated=context.is_simulated,\n                affected_services=context.affected_services,\n            ),\n            incident_id=context.incident_id,\n            environment=context.environment,\n            is_simulated=context.is_simulated,\n            status=status,\n            candidates=all_candidates,\n            top_candidate=top_candidate,\n            context_summary=self._build_context_summary(context),\n            historical_evidence_available=has_evidence,\n            historical_evidence_environment=historical_env,\n            analysis_caveats=[\n                "Decision relevance scores are NOT probabilities of success.",\n                "Historical evidence describes past observations under comparable "\n                "conditions — it is NOT causal proof and does NOT guarantee future outcomes.",\n                "Current evidence takes precedence over historical patterns.",\n                "All candidates require Safety/Policy evaluation and, where applicable, "\n                "human authorization before any execution can occur.",\n            ],\n            rca_candidates_used=context.rca_top_candidates,\n            experience_ids_used=sorted(set(all_experience_ids)),\n        )\n\n    def _enumerate_candidate_pairs(\n        self, context: DecisionContext\n    ) -> list[tuple[RecoveryActionType, str]]:\n        """\n        Generate bounded candidate (action_type, target_component) pairs.\n\n        Actions come ONLY from RecoveryActionType vocabulary.\n        Targets come ONLY from affected_services or RCA candidates.\n\n        The set of (action, target) pairs is bounded and deterministic.\n        MANUAL_INTERVENTION_REQUIRED is always included as a safe fallback.\n        """\n        # All valid targets: union of affected services and RCA candidates\n        # Sorted for determinism\n        candidate_targets = sorted(\n            set(context.affected_services) | set(context.rca_top_candidates)\n        )\n\n        if not candidate_targets:\n            return []\n\n        pairs: list[tuple[RecoveryActionType, str]] = []\n\n        # For each target, enumerate actions from the registry\n        for target in candidate_targets:\n            for action_type in sorted(RecoveryActionType, key=str):\n                pairs.append((action_type, target))\n\n        # Deterministic order: sort by (target, action_type)\n        pairs.sort(key=lambda p: (p[1], str(p[0])))\n\n        return pairs\n\n    def _build_context_summary(self, context: DecisionContext) -> str:\n        """Build a human-readable summary of the decision context."""\n        parts = []\n\n        if context.incident_id:\n            parts.append(f"Incident: {context.incident_id}")\n\n        env_label = "simulated" if context.is_simulated else "real"\n        parts.append(f"Environment: {context.environment} ({env_label})")\n\n        if context.affected_services:\n            parts.append(f"Affected services: {\', \'.join(context.affected_services)}")\n\n        if context.rca_top_candidates:\n            parts.append(\n                f"RCA top candidates: {\', \'.join(context.rca_top_candidates)}"\n            )\n        else:\n            parts.append("No RCA candidates available")\n\n        if context.active_event_count:\n            parts.append(f"Active events: {context.active_event_count}")\n\n        if context.reasoning_summary:\n            parts.append(f"Reasoning: {context.reasoning_summary}")\n\n        return ". ".join(parts) + "."\n'
+E     
+E     'eval(' is contained here:
+E       """
+E       Phase 16 — Adaptive Decision Intelligence: Decision Engine.
+E       
+E       The main orchestrator that:
+E         1. Accepts a DecisionContext (current incident evidence)
+E         2. Retrieves relevant historical experiences (Phase 13)
+E         3. Retrieves learning signals (Phase 14)
+E         4. Retrieves operational knowledge (Phase 14)
+E         5. Scores each bounded candidate action deterministically
+E         6. Returns a DecisionAnalysis with explainable, honest candidates
+E       
+E       CRITICAL SAFETY BOUNDARIES (enforced architecturally):
+E         - The engine NEVER calls any execution function.
+E         - The engine NEVER calls any Safety/Policy function.
+E         - The engine NEVER modifies any Experience, Signal, or Knowledge record.
+E         - The engine NEVER generates shell commands or arbitrary strings as actions.
+E         - Candidate actions come ONLY from RecoveryActionType vocabulary.
+E         - Simulation/real isolation is enforced in DecisionRetrieval.
+E       """
+E       
+E       from __future__ import annotations
+E       
+E       import structlog
+E       
+E       from backend.intelligence.decision.models import (
+E           DecisionAnalysis,
+E           DecisionCandidate,
+E           DecisionContext,
+E           DecisionStatus,
+E           EnvironmentContext,
+E           generate_decision_id,
+E       )
+E       from backend.intelligence.decision.retrieval import DecisionRetrieval
+E       from backend.intelligence.decision.scoring import DecisionScorer
+E       from backend.intelligence.learning.models import (
+E           ExperienceLearningSignal,
+E           OperationalKnowledge,
+E       )
+E       from backend.intelligence.memory.models import Experience
+E       from backend.intelligence.recovery.actions import (
+E           ACTION_REGISTRY,
+E           RecoveryActionType,
+E       )
+E       
+E       log = structlog.get_logger(__name__)
+E       
+E       # Maximum number of candidate (action_type, target) pairs to evaluate
+E       _MAX_CANDIDATE_PAIRS = 20
+E       
+E       
+E       class DecisionEngine:
+E           """
+E           Phase 16 Adaptive Decision Intelligence engine.
+E       
+E           ARCHITECTURAL POSITION:
+E               Sits between Phase 7 (AI Reasoning) / Phase 8 (Recovery Planning)
+E               and Phase 9 (Safety/Policy). Provides evidence-enriched candidate
+E               evaluation but does NOT replace or bypass Safety.
+E       
+E           INPUT: DecisionContext + historical evidence stores
+E           OUTPUT: DecisionAnalysis with ranked, explainable candidates
+E       
+E           BOUNDARY:
+E               This class is a pure analysis engine.
+E               It has no side effects on any other system component.
+E           """
+E       
+E           def __init__(self) -> None:
+E               self._retrieval = DecisionRetrieval()
+E     ?                                        +++++
+E               self._scorer = DecisionScorer()
+E       
+E           def analyze(
+E               self,
+E               *,
+E               context: DecisionContext,
+E               experiences: list[Experience],
+E               learning_signals: list[ExperienceLearningSignal],
+E               operational_knowledge: list[OperationalKnowledge],
+E           ) -> DecisionAnalysis:
+E               """
+E               Perform a complete decision intelligence analysis.
+E       
+E               Args:
+E                   context: Current operational decision context.
+E                   experiences: All available Phase 13 episodic experiences.
+E                   learning_signals: All available Phase 14 learning signals.
+E                   operational_knowledge: All available Phase 14 knowledge records.
+E       
+E               Returns:
+E                   A DecisionAnalysis with ranked, explainable, evidence-backed candidates.
+E       
+E               Notes:
+E                   - Never raises; returns DecisionAnalysis with status=ERROR on failure.
+E                   - Deterministic: same inputs → same analysis.
+E               """
+E               log.info(
+E                   "decision_analysis_started",
+E                   incident_id=context.incident_id,
+E                   environment=context.environment,
+E                   affected_services=context.affected_services,
+E                   rca_candidates=context.rca_top_candidates,
+E               )
+E       
+E               try:
+E                   return self._run_analysis(
+E                       context=context,
+E                       experiences=experiences,
+E                       learning_signals=learning_signals,
+E                       operational_knowledge=operational_knowledge,
+E                   )
+E               except Exception as exc:  # noqa: BLE001
+E                   log.error("decision_analysis_failed", error=str(exc), exc_info=True)
+E                   return DecisionAnalysis(
+E                       decision_id=generate_decision_id(
+E                           incident_id=context.incident_id,
+E                           environment=str(context.environment),
+E                           is_simulated=context.is_simulated,
+E                           affected_services=context.affected_services,
+E                       ),
+E                       incident_id=context.incident_id,
+E                       environment=context.environment,
+E                       is_simulated=context.is_simulated,
+E                       status=DecisionStatus.ERROR,
+E                       context_summary="Decision analysis failed due to an internal error.",
+E                       historical_evidence_available=False,
+E                       analysis_caveats=[
+E                           "Decision analysis encountered an internal error. "
+E                           "The system remains safe — no actions were taken.",
+E                           "Historical evidence is not causal proof.",
+E                       ],
+E                       error_message=str(exc),
+E                   )
+E       
+E           def _run_analysis(
+E               self,
+E               *,
+E               context: DecisionContext,
+E               experiences: list[Experience],
+E               learning_signals: list[ExperienceLearningSignal],
+E               operational_knowledge: list[OperationalKnowledge],
+E           ) -> DecisionAnalysis:
+E               """Inner implementation; exceptions propagate to analyze()."""
+E       
+E               # Step 1: Determine candidate (action_type, target) pairs from context
+E               candidate_pairs = self._enumerate_candidate_pairs(context)
+E       
+E               if not candidate_pairs:
+E                   return DecisionAnalysis(
+E                       decision_id=generate_decision_id(
+E                           incident_id=context.incident_id,
+E                           environment=str(context.environment),
+E                           is_simulated=context.is_simulated,
+E                           affected_services=context.affected_services,
+E                       ),
+E                       incident_id=context.incident_id,
+E                       environment=context.environment,
+E                       is_simulated=context.is_simulated,
+E                       status=DecisionStatus.NO_CANDIDATES,
+E                       context_summary=self._build_context_summary(context),
+E                       historical_evidence_available=False,
+E                       analysis_caveats=[
+E                           "No candidate action/target pairs could be identified from current evidence.",
+E                           "Historical evidence is not causal proof.",
+E                           "Decision relevance scores are not probabilities.",
+E                       ],
+E                   )
+E       
+E               # Step 2: Score each candidate pair
+E               all_experience_ids: list[str] = []
+E               all_candidates: list[DecisionCandidate] = []
+E       
+E               for action_type, target_component in candidate_pairs[:_MAX_CANDIDATE_PAIRS]:
+E                   # Retrieve historical evidence for this specific (action, target)
+E                   evidence = self._retrieval.retrieve_evidence(
+E                       action_type=action_type,
+E                       target_component=target_component,
+E                       current_is_simulated=context.is_simulated,
+E                       allow_simulation_evidence=context.allow_simulation_evidence,
+E                       experiences=experiences,
+E                       learning_signals=learning_signals,
+E                       operational_knowledge=operational_knowledge,
+E                       min_evidence_threshold=context.min_evidence_threshold,
+E                   )
+E                   all_experience_ids.extend(evidence.contributing_experience_ids)
+E       
+E                   # Build scored candidate
+E                   candidate = self._scorer.build_candidate(
+E                       action_type=action_type,
+E                       target_component=target_component,
+E                       rca_candidates=context.rca_top_candidates,
+E                       rca_scores=context.rca_candidate_scores,
+E                       reasoning_recommended=context.reasoning_recommended_actions,
+E                       historical_evidence=evidence,
+E                       current_environment=context.environment,
+E                       allow_simulation_evidence=context.allow_simulation_evidence,
+E                   )
+E                   all_candidates.append(candidate)
+E       
+E               # Step 3: Sort candidates deterministically
+E               # Primary: score descending
+E               # Secondary: action_type ascending (lexicographic — deterministic tie-break)
+E               # Tertiary: target_component ascending
+E               all_candidates.sort(
+E                   key=lambda c: (
+E                       -c.decision_relevance_score,
+E                       str(c.action_type),
+E                       c.target_component,
+E                   )
+E               )
+E       
+E               # Limit to max_candidates
+E               all_candidates = all_candidates[: context.max_candidates]
+E       
+E               # Step 4: Identify eligible candidates
+E               eligible = [c for c in all_candidates if c.eligibility.startswith("ELIGIBLE")]
+E       
+E               # Step 5: Determine top candidate (most relevant eligible candidate)
+E               top_candidate = eligible[0] if eligible else None
+E       
+E               # Step 6: Determine overall status
+E               if not eligible:
+E                   status = DecisionStatus.NO_CANDIDATES
+E               elif all(
+E                   not c.historical_evidence.is_sufficient for c in all_candidates
+E               ):
+E                   status = DecisionStatus.INSUFFICIENT_EVIDENCE
+E               else:
+E                   status = DecisionStatus.ANALYZED
+E       
+E               # Step 7: Determine evidence environment context
+E               evidence_envs = {c.historical_evidence.environment_context for c in all_candidates}
+E               if len(evidence_envs) == 1:
+E                   historical_env = next(iter(evidence_envs))
+E               elif evidence_envs:
+E                   historical_env = EnvironmentContext.MIXED
+E               else:
+E                   historical_env = None
+E       
+E               has_evidence = any(
+E                   c.historical_evidence.experience_count > 0 for c in all_candidates
+E               )
+E       
+E               log.info(
+E                   "decision_analysis_complete",
+E                   incident_id=context.incident_id,
+E                   status=status,
+E                   candidate_count=len(all_candidates),
+E                   eligible_count=len(eligible),
+E                   top_candidate=str(top_candidate.action_type) if top_candidate else None,
+E               )
+E       
+E               return DecisionAnalysis(
+E                   decision_id=generate_decision_id(
+E                       incident_id=context.incident_id,
+E                       environment=str(context.environment),
+E                       is_simulated=context.is_simulated,
+E                       affected_services=context.affected_services,
+E                   ),
+E                   incident_id=context.incident_id,
+E                   environment=context.environment,
+E                   is_simulated=context.is_simulated,
+E                   status=status,
+E                   candidates=all_candidates,
+E                   top_candidate=top_candidate,
+E                   context_summary=self._build_context_summary(context),
+E                   historical_evidence_available=has_evidence,
+E                   historical_evidence_environment=historical_env,
+E                   analysis_caveats=[
+E                       "Decision relevance scores are NOT probabilities of success.",
+E                       "Historical evidence describes past observations under comparable "
+E                       "conditions — it is NOT causal proof and does NOT guarantee future outcomes.",
+E                       "Current evidence takes precedence over historical patterns.",
+E                       "All candidates require Safety/Policy evaluation and, where applicable, "
+E                       "human authorization before any execution can occur.",
+E                   ],
+E                   rca_candidates_used=context.rca_top_candidates,
+E                   experience_ids_used=sorted(set(all_experience_ids)),
+E               )
+E       
+E           def _enumerate_candidate_pairs(
+E               self, context: DecisionContext
+E           ) -> list[tuple[RecoveryActionType, str]]:
+E               """
+E               Generate bounded candidate (action_type, target_component) pairs.
+E       
+E               Actions come ONLY from RecoveryActionType vocabulary.
+E               Targets come ONLY from affected_services or RCA candidates.
+E       
+E               The set of (action, target) pairs is bounded and deterministic.
+E               MANUAL_INTERVENTION_REQUIRED is always included as a safe fallback.
+E               """
+E               # All valid targets: union of affected services and RCA candidates
+E               # Sorted for determinism
+E               candidate_targets = sorted(
+E                   set(context.affected_services) | set(context.rca_top_candidates)
+E               )
+E       
+E               if not candidate_targets:
+E                   return []
+E       
+E               pairs: list[tuple[RecoveryActionType, str]] = []
+E       
+E               # For each target, enumerate actions from the registry
+E               for target in candidate_targets:
+E                   for action_type in sorted(RecoveryActionType, key=str):
+E                       pairs.append((action_type, target))
+E       
+E               # Deterministic order: sort by (target, action_type)
+E               pairs.sort(key=lambda p: (p[1], str(p[0])))
+E       
+E               return pairs
+E       
+E           def _build_context_summary(self, context: DecisionContext) -> str:
+E               """Build a human-readable summary of the decision context."""
+E               parts = []
+E       
+E               if context.incident_id:
+E                   parts.append(f"Incident: {context.incident_id}")
+E       
+E               env_label = "simulated" if context.is_simulated else "real"
+E               parts.append(f"Environment: {context.environment} ({env_label})")
+E       
+E               if context.affected_services:
+E                   parts.append(f"Affected services: {', '.join(context.affected_services)}")
+E       
+E               if context.rca_top_candidates:
+E                   parts.append(
+E                       f"RCA top candidates: {', '.join(context.rca_top_candidates)}"
+E                   )
+E               else:
+E                   parts.append("No RCA candidates available")
+E       
+E               if context.active_event_count:
+E                   parts.append(f"Active events: {context.active_event_count}")
+E       
+E               if context.reasoning_summary:
+E                   parts.append(f"Reasoning: {context.reasoning_summary}")
+E       
+E               return ". ".join(parts) + "."
+_____________ TestDecisionEngine.test_insufficient_evidence_status _____________
+tests/unit/intelligence/test_decision.py:707: in test_insufficient_evidence_status
+    ctx = _make_context(min_evidence_threshold=100)  # Very high threshold
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: _make_context() got an unexpected keyword argument 'min_evidence_threshold'
+___________ TestSecurityAudit.test_no_eval_exec_in_decision_modules ____________
+tests/unit/intelligence/test_decision.py:801: in test_no_eval_exec_in_decision_modules
+    assert "eval(" not in source
+E   assert 'eval(' not in '"""\nPhase 16 — Adaptive Decision Intelligence: Decision Engine.\n\nThe main orchestrator that:\n  1. Accepts a DecisionContext (current incident evidence)\n  2. Retrieves relevant historical experiences (Phase 13)\n  3. Retrieves learning signals (Phase 14)\n  4. Retrieves operational knowledge (Phase 14)\n  5. Scores each bounded candidate action deterministically\n  6. Returns a DecisionAnalysis with explainable, honest candidates\n\nCRITICAL SAFETY BOUNDARIES (enforced architecturally):\n  - The engine NEVER calls any execution function.\n  - The engine NEVER calls any Safety/Policy function.\n  - The engine NEVER modifies any Experience, Signal, or Knowledge record.\n  - The engine NEVER generates shell commands or arbitrary strings as actions.\n  - Candidate actions come ONLY from RecoveryActionType vocabulary.\n  - Simulation/real isolation is enforced in DecisionRetrieval.\n"""\n\nfrom __future__ import annotations\n\nimport structlog\n\nfrom backend.intelligence.decision.models import (\n    DecisionAnalysis,\n    DecisionCandidate,\n    DecisionContext,\n    DecisionStatus,\n    EnvironmentContext,\n    generate_decision_id,\n)\nfrom backend.intelligence.decision.retrieval import DecisionRetrieval\nfrom backend.intelligence.decision.scoring import DecisionScorer\nfrom backend.intelligence.learning.models import (\n    ExperienceLearningSignal,\n    OperationalKnowledge,\n)\nfrom backend.intelligence.memory.models import Experience\nfrom backend.intelligence.recovery.actions import (\n    ACTION_REGISTRY,\n    RecoveryActionType,\n)\n\nlog = structlog.get_logger(__name__)\n\n# Maximum number of candidate (action_type, target) pairs to evaluate\n_MAX_CANDIDATE_PAIRS = 20\n\n\nclass DecisionEngine:\n    """\n    Phase 16 Adaptive Decision Intelligence engine.\n\n    ARCHITECTURAL POSITION:\n        Sits between Phase 7 (AI Reasoning) / Phase 8 (Recovery Planning)\n        and Phase 9 (Safety/Policy). Provides evidence-enriched candidate\n        evaluation but does NOT replace or bypass Safety.\n\n    INPUT: DecisionContext + historical evidence stores\n    OUTPUT: DecisionAnalysis with ranked, explainable candidates\n\n    BOUNDARY:\n        This class is a pure analysis engine.\n        It has no side effects on any other system component.\n    """\n\n    def __init__(self) -> None:\n        self._retrieval = DecisionRetrieval()\n        self._scorer = DecisionScorer()\n\n    def analyze(\n        self,\n        *,\n        context: DecisionContext,\n        experiences: list[Experience],\n        learning_signals: list[ExperienceLearningSignal],\n        operational_knowledge: list[OperationalKnowledge],\n    ) -> DecisionAnalysis:\n        """\n        Perform a complete decision intelligence analysis.\n\n        Args:\n            context: Current operational decision context.\n            experiences: All available Phase 13 episodic experiences.\n            learning_signals: All available Phase 14 learning signals.\n            operational_knowledge: All available Phase 14 knowledge records.\n\n        Returns:\n            A DecisionAnalysis with ranked, explainable, evidence-backed candidates.\n\n        Notes:\n            - Never raises; returns DecisionAnalysis with status=ERROR on failure.\n            - Deterministic: same inputs → same analysis.\n        """\n        log.info(\n            "decision_analysis_started",\n            incident_id=context.incident_id,\n            environment=context.environment,\n            affected_services=context.affected_services,\n            rca_candidates=context.rca_top_candidates,\n        )\n\n        try:\n            return self._run_analysis(\n                context=context,\n                experiences=experiences,\n                learning_signals=learning_signals,\n                operational_knowledge=operational_knowledge,\n            )\n        except Exception as exc:  # noqa: BLE001\n            log.error("decision_analysis_failed", error=str(exc), exc_info=True)\n            return DecisionAnalysis(\n                decision_id=generate_decision_id(\n                    incident_id=context.incident_id,\n                    environment=str(context.environment),\n                    is_simulated=context.is_simulated,\n                    affected_services=context.affected_services,\n                ),\n                incident_id=context.incident_id,\n                environment=context.environment,\n                is_simulated=context.is_simulated,\n                status=DecisionStatus.ERROR,\n                context_summary="Decision analysis failed due to an internal error.",\n                historical_evidence_available=False,\n                analysis_caveats=[\n                    "Decision analysis encountered an internal error. "\n                    "The system remains safe — no actions were taken.",\n                    "Historical evidence is not causal proof.",\n                ],\n                error_message=str(exc),\n            )\n\n    def _run_analysis(\n        self,\n        *,\n        context: DecisionContext,\n        experiences: list[Experience],\n        learning_signals: list[ExperienceLearningSignal],\n        operational_knowledge: list[OperationalKnowledge],\n    ) -> DecisionAnalysis:\n        """Inner implementation; exceptions propagate to analyze()."""\n\n        # Step 1: Determine candidate (action_type, target) pairs from context\n        candidate_pairs = self._enumerate_candidate_pairs(context)\n\n        if not candidate_pairs:\n            return DecisionAnalysis(\n                decision_id=generate_decision_id(\n                    incident_id=context.incident_id,\n                    environment=str(context.environment),\n                    is_simulated=context.is_simulated,\n                    affected_services=context.affected_services,\n                ),\n                incident_id=context.incident_id,\n                environment=context.environment,\n                is_simulated=context.is_simulated,\n                status=DecisionStatus.NO_CANDIDATES,\n                context_summary=self._build_context_summary(context),\n                historical_evidence_available=False,\n                analysis_caveats=[\n                    "No candidate action/target pairs could be identified from current evidence.",\n                    "Historical evidence is not causal proof.",\n                    "Decision relevance scores are not probabilities.",\n                ],\n            )\n\n        # Step 2: Score each candidate pair\n        all_experience_ids: list[str] = []\n        all_candidates: list[DecisionCandidate] = []\n\n        for action_type, target_component in candidate_pairs[:_MAX_CANDIDATE_PAIRS]:\n            # Retrieve historical evidence for this specific (action, target)\n            evidence = self._retrieval.retrieve_evidence(\n                action_type=action_type,\n                target_component=target_component,\n                current_is_simulated=context.is_simulated,\n                allow_simulation_evidence=context.allow_simulation_evidence,\n                experiences=experiences,\n                learning_signals=learning_signals,\n                operational_knowledge=operational_knowledge,\n                min_evidence_threshold=context.min_evidence_threshold,\n            )\n            all_experience_ids.extend(evidence.contributing_experience_ids)\n\n            # Build scored candidate\n            candidate = self._scorer.build_candidate(\n                action_type=action_type,\n                target_component=target_component,\n                rca_candidates=context.rca_top_candidates,\n                rca_scores=context.rca_candidate_scores,\n                reasoning_recommended=context.reasoning_recommended_actions,\n                historical_evidence=evidence,\n                current_environment=context.environment,\n                allow_simulation_evidence=context.allow_simulation_evidence,\n            )\n            all_candidates.append(candidate)\n\n        # Step 3: Sort candidates deterministically\n        # Primary: score descending\n        # Secondary: action_type ascending (lexicographic — deterministic tie-break)\n        # Tertiary: target_component ascending\n        all_candidates.sort(\n            key=lambda c: (\n                -c.decision_relevance_score,\n                str(c.action_type),\n                c.target_component,\n            )\n        )\n\n        # Limit to max_candidates\n        all_candidates = all_candidates[: context.max_candidates]\n\n        # Step 4: Identify eligible candidates\n        eligible = [c for c in all_candidates if c.eligibility.startswith("ELIGIBLE")]\n\n        # Step 5: Determine top candidate (most relevant eligible candidate)\n        top_candidate = eligible[0] if eligible else None\n\n        # Step 6: Determine overall status\n        if not eligible:\n            status = DecisionStatus.NO_CANDIDATES\n        elif all(\n            not c.historical_evidence.is_sufficient for c in all_candidates\n        ):\n            status = DecisionStatus.INSUFFICIENT_EVIDENCE\n        else:\n            status = DecisionStatus.ANALYZED\n\n        # Step 7: Determine evidence environment context\n        evidence_envs = {c.historical_evidence.environment_context for c in all_candidates}\n        if len(evidence_envs) == 1:\n            historical_env = next(iter(evidence_envs))\n        elif evidence_envs:\n            historical_env = EnvironmentContext.MIXED\n        else:\n            historical_env = None\n\n        has_evidence = any(\n            c.historical_evidence.experience_count > 0 for c in all_candidates\n        )\n\n        log.info(\n            "decision_analysis_complete",\n            incident_id=context.incident_id,\n            status=status,\n            candidate_count=len(all_candidates),\n            eligible_count=len(eligible),\n            top_candidate=str(top_candidate.action_type) if top_candidate else None,\n        )\n\n        return DecisionAnalysis(\n            decision_id=generate_decision_id(\n                incident_id=context.incident_id,\n                environment=str(context.environment),\n                is_simulated=context.is_simulated,\n                affected_services=context.affected_services,\n            ),\n            incident_id=context.incident_id,\n            environment=context.environment,\n            is_simulated=context.is_simulated,\n            status=status,\n            candidates=all_candidates,\n            top_candidate=top_candidate,\n            context_summary=self._build_context_summary(context),\n            historical_evidence_available=has_evidence,\n            historical_evidence_environment=historical_env,\n            analysis_caveats=[\n                "Decision relevance scores are NOT probabilities of success.",\n                "Historical evidence describes past observations under comparable "\n                "conditions — it is NOT causal proof and does NOT guarantee future outcomes.",\n                "Current evidence takes precedence over historical patterns.",\n                "All candidates require Safety/Policy evaluation and, where applicable, "\n                "human authorization before any execution can occur.",\n            ],\n            rca_candidates_used=context.rca_top_candidates,\n            experience_ids_used=sorted(set(all_experience_ids)),\n        )\n\n    def _enumerate_candidate_pairs(\n        self, context: DecisionContext\n    ) -> list[tuple[RecoveryActionType, str]]:\n        """\n        Generate bounded candidate (action_type, target_component) pairs.\n\n        Actions come ONLY from RecoveryActionType vocabulary.\n        Targets come ONLY from affected_services or RCA candidates.\n\n        The set of (action, target) pairs is bounded and deterministic.\n        MANUAL_INTERVENTION_REQUIRED is always included as a safe fallback.\n        """\n        # All valid targets: union of affected services and RCA candidates\n        # Sorted for determinism\n        candidate_targets = sorted(\n            set(context.affected_services) | set(context.rca_top_candidates)\n        )\n\n        if not candidate_targets:\n            return []\n\n        pairs: list[tuple[RecoveryActionType, str]] = []\n\n        # For each target, enumerate actions from the registry\n        for target in candidate_targets:\n            for action_type in sorted(RecoveryActionType, key=str):\n                pairs.append((action_type, target))\n\n        # Deterministic order: sort by (target, action_type)\n        pairs.sort(key=lambda p: (p[1], str(p[0])))\n\n        return pairs\n\n    def _build_context_summary(self, context: DecisionContext) -> str:\n        """Build a human-readable summary of the decision context."""\n        parts = []\n\n        if context.incident_id:\n            parts.append(f"Incident: {context.incident_id}")\n\n        env_label = "simulated" if context.is_simulated else "real"\n        parts.append(f"Environment: {context.environment} ({env_label})")\n\n        if context.affected_services:\n            parts.append(f"Affected services: {\', \'.join(context.affected_services)}")\n\n        if context.rca_top_candidates:\n            parts.append(\n                f"RCA top candidates: {\', \'.join(context.rca_top_candidates)}"\n            )\n        else:\n            parts.append("No RCA candidates available")\n\n        if context.active_event_count:\n            parts.append(f"Active events: {context.active_event_count}")\n\n        if context.reasoning_summary:\n            parts.append(f"Reasoning: {context.reasoning_summary}")\n\n        return ". ".join(parts) + "."\n'
+E     
+E     'eval(' is contained here:
+E       """
+E       Phase 16 — Adaptive Decision Intelligence: Decision Engine.
+E       
+E       The main orchestrator that:
+E         1. Accepts a DecisionContext (current incident evidence)
+E         2. Retrieves relevant historical experiences (Phase 13)
+E         3. Retrieves learning signals (Phase 14)
+E         4. Retrieves operational knowledge (Phase 14)
+E         5. Scores each bounded candidate action deterministically
+E         6. Returns a DecisionAnalysis with explainable, honest candidates
+E       
+E       CRITICAL SAFETY BOUNDARIES (enforced architecturally):
+E         - The engine NEVER calls any execution function.
+E         - The engine NEVER calls any Safety/Policy function.
+E         - The engine NEVER modifies any Experience, Signal, or Knowledge record.
+E         - The engine NEVER generates shell commands or arbitrary strings as actions.
+E         - Candidate actions come ONLY from RecoveryActionType vocabulary.
+E         - Simulation/real isolation is enforced in DecisionRetrieval.
+E       """
+E       
+E       from __future__ import annotations
+E       
+E       import structlog
+E       
+E       from backend.intelligence.decision.models import (
+E           DecisionAnalysis,
+E           DecisionCandidate,
+E           DecisionContext,
+E           DecisionStatus,
+E           EnvironmentContext,
+E           generate_decision_id,
+E       )
+E       from backend.intelligence.decision.retrieval import DecisionRetrieval
+E       from backend.intelligence.decision.scoring import DecisionScorer
+E       from backend.intelligence.learning.models import (
+E           ExperienceLearningSignal,
+E           OperationalKnowledge,
+E       )
+E       from backend.intelligence.memory.models import Experience
+E       from backend.intelligence.recovery.actions import (
+E           ACTION_REGISTRY,
+E           RecoveryActionType,
+E       )
+E       
+E       log = structlog.get_logger(__name__)
+E       
+E       # Maximum number of candidate (action_type, target) pairs to evaluate
+E       _MAX_CANDIDATE_PAIRS = 20
+E       
+E       
+E       class DecisionEngine:
+E           """
+E           Phase 16 Adaptive Decision Intelligence engine.
+E       
+E           ARCHITECTURAL POSITION:
+E               Sits between Phase 7 (AI Reasoning) / Phase 8 (Recovery Planning)
+E               and Phase 9 (Safety/Policy). Provides evidence-enriched candidate
+E               evaluation but does NOT replace or bypass Safety.
+E       
+E           INPUT: DecisionContext + historical evidence stores
+E           OUTPUT: DecisionAnalysis with ranked, explainable candidates
+E       
+E           BOUNDARY:
+E               This class is a pure analysis engine.
+E               It has no side effects on any other system component.
+E           """
+E       
+E           def __init__(self) -> None:
+E               self._retrieval = DecisionRetrieval()
+E     ?                                        +++++
+E               self._scorer = DecisionScorer()
+E       
+E           def analyze(
+E               self,
+E               *,
+E               context: DecisionContext,
+E               experiences: list[Experience],
+E               learning_signals: list[ExperienceLearningSignal],
+E               operational_knowledge: list[OperationalKnowledge],
+E           ) -> DecisionAnalysis:
+E               """
+E               Perform a complete decision intelligence analysis.
+E       
+E               Args:
+E                   context: Current operational decision context.
+E                   experiences: All available Phase 13 episodic experiences.
+E                   learning_signals: All available Phase 14 learning signals.
+E                   operational_knowledge: All available Phase 14 knowledge records.
+E       
+E               Returns:
+E                   A DecisionAnalysis with ranked, explainable, evidence-backed candidates.
+E       
+E               Notes:
+E                   - Never raises; returns DecisionAnalysis with status=ERROR on failure.
+E                   - Deterministic: same inputs → same analysis.
+E               """
+E               log.info(
+E                   "decision_analysis_started",
+E                   incident_id=context.incident_id,
+E                   environment=context.environment,
+E                   affected_services=context.affected_services,
+E                   rca_candidates=context.rca_top_candidates,
+E               )
+E       
+E               try:
+E                   return self._run_analysis(
+E                       context=context,
+E                       experiences=experiences,
+E                       learning_signals=learning_signals,
+E                       operational_knowledge=operational_knowledge,
+E                   )
+E               except Exception as exc:  # noqa: BLE001
+E                   log.error("decision_analysis_failed", error=str(exc), exc_info=True)
+E                   return DecisionAnalysis(
+E                       decision_id=generate_decision_id(
+E                           incident_id=context.incident_id,
+E                           environment=str(context.environment),
+E                           is_simulated=context.is_simulated,
+E                           affected_services=context.affected_services,
+E                       ),
+E                       incident_id=context.incident_id,
+E                       environment=context.environment,
+E                       is_simulated=context.is_simulated,
+E                       status=DecisionStatus.ERROR,
+E                       context_summary="Decision analysis failed due to an internal error.",
+E                       historical_evidence_available=False,
+E                       analysis_caveats=[
+E                           "Decision analysis encountered an internal error. "
+E                           "The system remains safe — no actions were taken.",
+E                           "Historical evidence is not causal proof.",
+E                       ],
+E                       error_message=str(exc),
+E                   )
+E       
+E           def _run_analysis(
+E               self,
+E               *,
+E               context: DecisionContext,
+E               experiences: list[Experience],
+E               learning_signals: list[ExperienceLearningSignal],
+E               operational_knowledge: list[OperationalKnowledge],
+E           ) -> DecisionAnalysis:
+E               """Inner implementation; exceptions propagate to analyze()."""
+E       
+E               # Step 1: Determine candidate (action_type, target) pairs from context
+E               candidate_pairs = self._enumerate_candidate_pairs(context)
+E       
+E               if not candidate_pairs:
+E                   return DecisionAnalysis(
+E                       decision_id=generate_decision_id(
+E                           incident_id=context.incident_id,
+E                           environment=str(context.environment),
+E                           is_simulated=context.is_simulated,
+E                           affected_services=context.affected_services,
+E                       ),
+E                       incident_id=context.incident_id,
+E                       environment=context.environment,
+E                       is_simulated=context.is_simulated,
+E                       status=DecisionStatus.NO_CANDIDATES,
+E                       context_summary=self._build_context_summary(context),
+E                       historical_evidence_available=False,
+E                       analysis_caveats=[
+E                           "No candidate action/target pairs could be identified from current evidence.",
+E                           "Historical evidence is not causal proof.",
+E                           "Decision relevance scores are not probabilities.",
+E                       ],
+E                   )
+E       
+E               # Step 2: Score each candidate pair
+E               all_experience_ids: list[str] = []
+E               all_candidates: list[DecisionCandidate] = []
+E       
+E               for action_type, target_component in candidate_pairs[:_MAX_CANDIDATE_PAIRS]:
+E                   # Retrieve historical evidence for this specific (action, target)
+E                   evidence = self._retrieval.retrieve_evidence(
+E                       action_type=action_type,
+E                       target_component=target_component,
+E                       current_is_simulated=context.is_simulated,
+E                       allow_simulation_evidence=context.allow_simulation_evidence,
+E                       experiences=experiences,
+E                       learning_signals=learning_signals,
+E                       operational_knowledge=operational_knowledge,
+E                       min_evidence_threshold=context.min_evidence_threshold,
+E                   )
+E                   all_experience_ids.extend(evidence.contributing_experience_ids)
+E       
+E                   # Build scored candidate
+E                   candidate = self._scorer.build_candidate(
+E                       action_type=action_type,
+E                       target_component=target_component,
+E                       rca_candidates=context.rca_top_candidates,
+E                       rca_scores=context.rca_candidate_scores,
+E                       reasoning_recommended=context.reasoning_recommended_actions,
+E                       historical_evidence=evidence,
+E                       current_environment=context.environment,
+E                       allow_simulation_evidence=context.allow_simulation_evidence,
+E                   )
+E                   all_candidates.append(candidate)
+E       
+E               # Step 3: Sort candidates deterministically
+E               # Primary: score descending
+E               # Secondary: action_type ascending (lexicographic — deterministic tie-break)
+E               # Tertiary: target_component ascending
+E               all_candidates.sort(
+E                   key=lambda c: (
+E                       -c.decision_relevance_score,
+E                       str(c.action_type),
+E                       c.target_component,
+E                   )
+E               )
+E       
+E               # Limit to max_candidates
+E               all_candidates = all_candidates[: context.max_candidates]
+E       
+E               # Step 4: Identify eligible candidates
+E               eligible = [c for c in all_candidates if c.eligibility.startswith("ELIGIBLE")]
+E       
+E               # Step 5: Determine top candidate (most relevant eligible candidate)
+E               top_candidate = eligible[0] if eligible else None
+E       
+E               # Step 6: Determine overall status
+E               if not eligible:
+E                   status = DecisionStatus.NO_CANDIDATES
+E               elif all(
+E                   not c.historical_evidence.is_sufficient for c in all_candidates
+E               ):
+E                   status = DecisionStatus.INSUFFICIENT_EVIDENCE
+E               else:
+E                   status = DecisionStatus.ANALYZED
+E       
+E               # Step 7: Determine evidence environment context
+E               evidence_envs = {c.historical_evidence.environment_context for c in all_candidates}
+E               if len(evidence_envs) == 1:
+E                   historical_env = next(iter(evidence_envs))
+E               elif evidence_envs:
+E                   historical_env = EnvironmentContext.MIXED
+E               else:
+E                   historical_env = None
+E       
+E               has_evidence = any(
+E                   c.historical_evidence.experience_count > 0 for c in all_candidates
+E               )
+E       
+E               log.info(
+E                   "decision_analysis_complete",
+E                   incident_id=context.incident_id,
+E                   status=status,
+E                   candidate_count=len(all_candidates),
+E                   eligible_count=len(eligible),
+E                   top_candidate=str(top_candidate.action_type) if top_candidate else None,
+E               )
+E       
+E               return DecisionAnalysis(
+E                   decision_id=generate_decision_id(
+E                       incident_id=context.incident_id,
+E                       environment=str(context.environment),
+E                       is_simulated=context.is_simulated,
+E                       affected_services=context.affected_services,
+E                   ),
+E                   incident_id=context.incident_id,
+E                   environment=context.environment,
+E                   is_simulated=context.is_simulated,
+E                   status=status,
+E                   candidates=all_candidates,
+E                   top_candidate=top_candidate,
+E                   context_summary=self._build_context_summary(context),
+E                   historical_evidence_available=has_evidence,
+E                   historical_evidence_environment=historical_env,
+E                   analysis_caveats=[
+E                       "Decision relevance scores are NOT probabilities of success.",
+E                       "Historical evidence describes past observations under comparable "
+E                       "conditions — it is NOT causal proof and does NOT guarantee future outcomes.",
+E                       "Current evidence takes precedence over historical patterns.",
+E                       "All candidates require Safety/Policy evaluation and, where applicable, "
+E                       "human authorization before any execution can occur.",
+E                   ],
+E                   rca_candidates_used=context.rca_top_candidates,
+E                   experience_ids_used=sorted(set(all_experience_ids)),
+E               )
+E       
+E           def _enumerate_candidate_pairs(
+E               self, context: DecisionContext
+E           ) -> list[tuple[RecoveryActionType, str]]:
+E               """
+E               Generate bounded candidate (action_type, target_component) pairs.
+E       
+E               Actions come ONLY from RecoveryActionType vocabulary.
+E               Targets come ONLY from affected_services or RCA candidates.
+E       
+E               The set of (action, target) pairs is bounded and deterministic.
+E               MANUAL_INTERVENTION_REQUIRED is always included as a safe fallback.
+E               """
+E               # All valid targets: union of affected services and RCA candidates
+E               # Sorted for determinism
+E               candidate_targets = sorted(
+E                   set(context.affected_services) | set(context.rca_top_candidates)
+E               )
+E       
+E               if not candidate_targets:
+E                   return []
+E       
+E               pairs: list[tuple[RecoveryActionType, str]] = []
+E       
+E               # For each target, enumerate actions from the registry
+E               for target in candidate_targets:
+E                   for action_type in sorted(RecoveryActionType, key=str):
+E                       pairs.append((action_type, target))
+E       
+E               # Deterministic order: sort by (target, action_type)
+E               pairs.sort(key=lambda p: (p[1], str(p[0])))
+E       
+E               return pairs
+E       
+E           def _build_context_summary(self, context: DecisionContext) -> str:
+E               """Build a human-readable summary of the decision context."""
+E               parts = []
+E       
+E               if context.incident_id:
+E                   parts.append(f"Incident: {context.incident_id}")
+E       
+E               env_label = "simulated" if context.is_simulated else "real"
+E               parts.append(f"Environment: {context.environment} ({env_label})")
+E       
+E               if context.affected_services:
+E                   parts.append(f"Affected services: {', '.join(context.affected_services)}")
+E       
+E               if context.rca_top_candidates:
+E                   parts.append(
+E                       f"RCA top candidates: {', '.join(context.rca_top_candidates)}"
+E                   )
+E               else:
+E                   parts.append("No RCA candidates available")
+E       
+E               if context.active_event_count:
+E                   parts.append(f"Active events: {context.active_event_count}")
+E       
+E               if context.reasoning_summary:
+E                   parts.append(f"Reasoning: {context.reasoning_summary}")
+E       
+E               return ". ".join(parts) + "."
+=============================== warnings summary ===============================
+.venv/lib/python3.14/site-packages/starlette/testclient.py:53
+  /Users/abhisekpatra/Desktop/SynapseOps/.venv/lib/python3.14/site-packages/starlette/testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_scenario_f_no_direct_execution - AssertionError: Security violation: 'eval(' found in decision engine
+assert 'eval(' not in '"""\nPhase 16 — Adaptive Decision Intelligence: Decision Engine.\n\nThe main orchestrator that:\n  1. Accepts a DecisionContext (current incident evidence)\n  2. Retrieves relevant historical experiences (Phase 13)\n  3. Retrieves learning signals (Phase 14)\n  4. Retrieves operational knowledge (Phase 14)\n  5. Scores each bounded candidate action deterministically\n  6. Returns a DecisionAnalysis with explainable, honest candidates\n\nCRITICAL SAFETY BOUNDARIES (enforced architecturally):\n  - The engine NEVER calls any execution function.\n  - The engine NEVER calls any Safety/Policy function.\n  - The engine NEVER modifies any Experience, Signal, or Knowledge record.\n  - The engine NEVER generates shell commands or arbitrary strings as actions.\n  - Candidate actions come ONLY from RecoveryActionType vocabulary.\n  - Simulation/real isolation is enforced in DecisionRetrieval.\n"""\n\nfrom __future__ import annotations\n\nimport structlog\n\nfrom backend.intelligence.decision.models import (\n    DecisionAnalysis,\n    DecisionCandidate,\n    DecisionContext,\n    DecisionStatus,\n    EnvironmentContext,\n    generate_decision_id,\n)\nfrom backend.intelligence.decision.retrieval import DecisionRetrieval\nfrom backend.intelligence.decision.scoring import DecisionScorer\nfrom backend.intelligence.learning.models import (\n    ExperienceLearningSignal,\n    OperationalKnowledge,\n)\nfrom backend.intelligence.memory.models import Experience\nfrom backend.intelligence.recovery.actions import (\n    ACTION_REGISTRY,\n    RecoveryActionType,\n)\n\nlog = structlog.get_logger(__name__)\n\n# Maximum number of candidate (action_type, target) pairs to evaluate\n_MAX_CANDIDATE_PAIRS = 20\n\n\nclass DecisionEngine:\n    """\n    Phase 16 Adaptive Decision Intelligence engine.\n\n    ARCHITECTURAL POSITION:\n        Sits between Phase 7 (AI Reasoning) / Phase 8 (Recovery Planning)\n        and Phase 9 (Safety/Policy). Provides evidence-enriched candidate\n        evaluation but does NOT replace or bypass Safety.\n\n    INPUT: DecisionContext + historical evidence stores\n    OUTPUT: DecisionAnalysis with ranked, explainable candidates\n\n    BOUNDARY:\n        This class is a pure analysis engine.\n        It has no side effects on any other system component.\n    """\n\n    def __init__(self) -> None:\n        self._retrieval = DecisionRetrieval()\n        self._scorer = DecisionScorer()\n\n    def analyze(\n        self,\n        *,\n        context: DecisionContext,\n        experiences: list[Experience],\n        learning_signals: list[ExperienceLearningSignal],\n        operational_knowledge: list[OperationalKnowledge],\n    ) -> DecisionAnalysis:\n        """\n        Perform a complete decision intelligence analysis.\n\n        Args:\n            context: Current operational decision context.\n            experiences: All available Phase 13 episodic experiences.\n            learning_signals: All available Phase 14 learning signals.\n            operational_knowledge: All available Phase 14 knowledge records.\n\n        Returns:\n            A DecisionAnalysis with ranked, explainable, evidence-backed candidates.\n\n        Notes:\n            - Never raises; returns DecisionAnalysis with status=ERROR on failure.\n            - Deterministic: same inputs → same analysis.\n        """\n        log.info(\n            "decision_analysis_started",\n            incident_id=context.incident_id,\n            environment=context.environment,\n            affected_services=context.affected_services,\n            rca_candidates=context.rca_top_candidates,\n        )\n\n        try:\n            return self._run_analysis(\n                context=context,\n                experiences=experiences,\n                learning_signals=learning_signals,\n                operational_knowledge=operational_knowledge,\n            )\n        except Exception as exc:  # noqa: BLE001\n            log.error("decision_analysis_failed", error=str(exc), exc_info=True)\n            return DecisionAnalysis(\n                decision_id=generate_decision_id(\n                    incident_id=context.incident_id,\n                    environment=str(context.environment),\n                    is_simulated=context.is_simulated,\n                    affected_services=context.affected_services,\n                ),\n                incident_id=context.incident_id,\n                environment=context.environment,\n                is_simulated=context.is_simulated,\n                status=DecisionStatus.ERROR,\n                context_summary="Decision analysis failed due to an internal error.",\n                historical_evidence_available=False,\n                analysis_caveats=[\n                    "Decision analysis encountered an internal error. "\n                    "The system remains safe — no actions were taken.",\n                    "Historical evidence is not causal proof.",\n                ],\n                error_message=str(exc),\n            )\n\n    def _run_analysis(\n        self,\n        *,\n        context: DecisionContext,\n        experiences: list[Experience],\n        learning_signals: list[ExperienceLearningSignal],\n        operational_knowledge: list[OperationalKnowledge],\n    ) -> DecisionAnalysis:\n        """Inner implementation; exceptions propagate to analyze()."""\n\n        # Step 1: Determine candidate (action_type, target) pairs from context\n        candidate_pairs = self._enumerate_candidate_pairs(context)\n\n        if not candidate_pairs:\n            return DecisionAnalysis(\n                decision_id=generate_decision_id(\n                    incident_id=context.incident_id,\n                    environment=str(context.environment),\n                    is_simulated=context.is_simulated,\n                    affected_services=context.affected_services,\n                ),\n                incident_id=context.incident_id,\n                environment=context.environment,\n                is_simulated=context.is_simulated,\n                status=DecisionStatus.NO_CANDIDATES,\n                context_summary=self._build_context_summary(context),\n                historical_evidence_available=False,\n                analysis_caveats=[\n                    "No candidate action/target pairs could be identified from current evidence.",\n                    "Historical evidence is not causal proof.",\n                    "Decision relevance scores are not probabilities.",\n                ],\n            )\n\n        # Step 2: Score each candidate pair\n        all_experience_ids: list[str] = []\n        all_candidates: list[DecisionCandidate] = []\n\n        for action_type, target_component in candidate_pairs[:_MAX_CANDIDATE_PAIRS]:\n            # Retrieve historical evidence for this specific (action, target)\n            evidence = self._retrieval.retrieve_evidence(\n                action_type=action_type,\n                target_component=target_component,\n                current_is_simulated=context.is_simulated,\n                allow_simulation_evidence=context.allow_simulation_evidence,\n                experiences=experiences,\n                learning_signals=learning_signals,\n                operational_knowledge=operational_knowledge,\n                min_evidence_threshold=context.min_evidence_threshold,\n            )\n            all_experience_ids.extend(evidence.contributing_experience_ids)\n\n            # Build scored candidate\n            candidate = self._scorer.build_candidate(\n                action_type=action_type,\n                target_component=target_component,\n                rca_candidates=context.rca_top_candidates,\n                rca_scores=context.rca_candidate_scores,\n                reasoning_recommended=context.reasoning_recommended_actions,\n                historical_evidence=evidence,\n                current_environment=context.environment,\n                allow_simulation_evidence=context.allow_simulation_evidence,\n            )\n            all_candidates.append(candidate)\n\n        # Step 3: Sort candidates deterministically\n        # Primary: score descending\n        # Secondary: action_type ascending (lexicographic — deterministic tie-break)\n        # Tertiary: target_component ascending\n        all_candidates.sort(\n            key=lambda c: (\n                -c.decision_relevance_score,\n                str(c.action_type),\n                c.target_component,\n            )\n        )\n\n        # Limit to max_candidates\n        all_candidates = all_candidates[: context.max_candidates]\n\n        # Step 4: Identify eligible candidates\n        eligible = [c for c in all_candidates if c.eligibility.startswith("ELIGIBLE")]\n\n        # Step 5: Determine top candidate (most relevant eligible candidate)\n        top_candidate = eligible[0] if eligible else None\n\n        # Step 6: Determine overall status\n        if not eligible:\n            status = DecisionStatus.NO_CANDIDATES\n        elif all(\n            not c.historical_evidence.is_sufficient for c in all_candidates\n        ):\n            status = DecisionStatus.INSUFFICIENT_EVIDENCE\n        else:\n            status = DecisionStatus.ANALYZED\n\n        # Step 7: Determine evidence environment context\n        evidence_envs = {c.historical_evidence.environment_context for c in all_candidates}\n        if len(evidence_envs) == 1:\n            historical_env = next(iter(evidence_envs))\n        elif evidence_envs:\n            historical_env = EnvironmentContext.MIXED\n        else:\n            historical_env = None\n\n        has_evidence = any(\n            c.historical_evidence.experience_count > 0 for c in all_candidates\n        )\n\n        log.info(\n            "decision_analysis_complete",\n            incident_id=context.incident_id,\n            status=status,\n            candidate_count=len(all_candidates),\n            eligible_count=len(eligible),\n            top_candidate=str(top_candidate.action_type) if top_candidate else None,\n        )\n\n        return DecisionAnalysis(\n            decision_id=generate_decision_id(\n                incident_id=context.incident_id,\n                environment=str(context.environment),\n                is_simulated=context.is_simulated,\n                affected_services=context.affected_services,\n            ),\n            incident_id=context.incident_id,\n            environment=context.environment,\n            is_simulated=context.is_simulated,\n            status=status,\n            candidates=all_candidates,\n            top_candidate=top_candidate,\n            context_summary=self._build_context_summary(context),\n            historical_evidence_available=has_evidence,\n            historical_evidence_environment=historical_env,\n            analysis_caveats=[\n                "Decision relevance scores are NOT probabilities of success.",\n                "Historical evidence describes past observations under comparable "\n                "conditions — it is NOT causal proof and does NOT guarantee future outcomes.",\n                "Current evidence takes precedence over historical patterns.",\n                "All candidates require Safety/Policy evaluation and, where applicable, "\n                "human authorization before any execution can occur.",\n            ],\n            rca_candidates_used=context.rca_top_candidates,\n            experience_ids_used=sorted(set(all_experience_ids)),\n        )\n\n    def _enumerate_candidate_pairs(\n        self, context: DecisionContext\n    ) -> list[tuple[RecoveryActionType, str]]:\n        """\n        Generate bounded candidate (action_type, target_component) pairs.\n\n        Actions come ONLY from RecoveryActionType vocabulary.\n        Targets come ONLY from affected_services or RCA candidates.\n\n        The set of (action, target) pairs is bounded and deterministic.\n        MANUAL_INTERVENTION_REQUIRED is always included as a safe fallback.\n        """\n        # All valid targets: union of affected services and RCA candidates\n        # Sorted for determinism\n        candidate_targets = sorted(\n            set(context.affected_services) | set(context.rca_top_candidates)\n        )\n\n        if not candidate_targets:\n            return []\n\n        pairs: list[tuple[RecoveryActionType, str]] = []\n\n        # For each target, enumerate actions from the registry\n        for target in candidate_targets:\n            for action_type in sorted(RecoveryActionType, key=str):\n                pairs.append((action_type, target))\n\n        # Deterministic order: sort by (target, action_type)\n        pairs.sort(key=lambda p: (p[1], str(p[0])))\n\n        return pairs\n\n    def _build_context_summary(self, context: DecisionContext) -> str:\n        """Build a human-readable summary of the decision context."""\n        parts = []\n\n        if context.incident_id:\n            parts.append(f"Incident: {context.incident_id}")\n\n        env_label = "simulated" if context.is_simulated else "real"\n        parts.append(f"Environment: {context.environment} ({env_label})")\n\n        if context.affected_services:\n            parts.append(f"Affected services: {\', \'.join(context.affected_services)}")\n\n        if context.rca_top_candidates:\n            parts.append(\n                f"RCA top candidates: {\', \'.join(context.rca_top_candidates)}"\n            )\n        else:\n            parts.append("No RCA candidates available")\n\n        if context.active_event_count:\n            parts.append(f"Active events: {context.active_event_count}")\n\n        if context.reasoning_summary:\n            parts.append(f"Reasoning: {context.reasoning_summary}")\n\n        return ". ".join(parts) + "."\n'
+  
+  'eval(' is contained here:
+    """
+    Phase 16 — Adaptive Decision Intelligence: Decision Engine.
+    
+    The main orchestrator that:
+      1. Accepts a DecisionContext (current incident evidence)
+      2. Retrieves relevant historical experiences (Phase 13)
+      3. Retrieves learning signals (Phase 14)
+      4. Retrieves operational knowledge (Phase 14)
+      5. Scores each bounded candidate action deterministically
+      6. Returns a DecisionAnalysis with explainable, honest candidates
+    
+    CRITICAL SAFETY BOUNDARIES (enforced architecturally):
+      - The engine NEVER calls any execution function.
+      - The engine NEVER calls any Safety/Policy function.
+      - The engine NEVER modifies any Experience, Signal, or Knowledge record.
+      - The engine NEVER generates shell commands or arbitrary strings as actions.
+      - Candidate actions come ONLY from RecoveryActionType vocabulary.
+      - Simulation/real isolation is enforced in DecisionRetrieval.
+    """
+    
+    from __future__ import annotations
+    
+    import structlog
+    
+    from backend.intelligence.decision.models import (
+        DecisionAnalysis,
+        DecisionCandidate,
+        DecisionContext,
+        DecisionStatus,
+        EnvironmentContext,
+        generate_decision_id,
+    )
+    from backend.intelligence.decision.retrieval import DecisionRetrieval
+    from backend.intelligence.decision.scoring import DecisionScorer
+    from backend.intelligence.learning.models import (
+        ExperienceLearningSignal,
+        OperationalKnowledge,
+    )
+    from backend.intelligence.memory.models import Experience
+    from backend.intelligence.recovery.actions import (
+        ACTION_REGISTRY,
+        RecoveryActionType,
+    )
+    
+    log = structlog.get_logger(__name__)
+    
+    # Maximum number of candidate (action_type, target) pairs to evaluate
+    _MAX_CANDIDATE_PAIRS = 20
+    
+    
+    class DecisionEngine:
+        """
+        Phase 16 Adaptive Decision Intelligence engine.
+    
+        ARCHITECTURAL POSITION:
+            Sits between Phase 7 (AI Reasoning) / Phase 8 (Recovery Planning)
+            and Phase 9 (Safety/Policy). Provides evidence-enriched candidate
+            evaluation but does NOT replace or bypass Safety.
+    
+        INPUT: DecisionContext + historical evidence stores
+        OUTPUT: DecisionAnalysis with ranked, explainable candidates
+    
+        BOUNDARY:
+            This class is a pure analysis engine.
+            It has no side effects on any other system component.
+        """
+    
+        def __init__(self) -> None:
+            self._retrieval = DecisionRetrieval()
+  ?                                        +++++
+            self._scorer = DecisionScorer()
+    
+        def analyze(
+            self,
+            *,
+            context: DecisionContext,
+            experiences: list[Experience],
+            learning_signals: list[ExperienceLearningSignal],
+            operational_knowledge: list[OperationalKnowledge],
+        ) -> DecisionAnalysis:
+            """
+            Perform a complete decision intelligence analysis.
+    
+            Args:
+                context: Current operational decision context.
+                experiences: All available Phase 13 episodic experiences.
+                learning_signals: All available Phase 14 learning signals.
+                operational_knowledge: All available Phase 14 knowledge records.
+    
+            Returns:
+                A DecisionAnalysis with ranked, explainable, evidence-backed candidates.
+    
+            Notes:
+                - Never raises; returns DecisionAnalysis with status=ERROR on failure.
+                - Deterministic: same inputs → same analysis.
+            """
+            log.info(
+                "decision_analysis_started",
+                incident_id=context.incident_id,
+                environment=context.environment,
+                affected_services=context.affected_services,
+                rca_candidates=context.rca_top_candidates,
+            )
+    
+            try:
+                return self._run_analysis(
+                    context=context,
+                    experiences=experiences,
+                    learning_signals=learning_signals,
+                    operational_knowledge=operational_knowledge,
+                )
+            except Exception as exc:  # noqa: BLE001
+                log.error("decision_analysis_failed", error=str(exc), exc_info=True)
+                return DecisionAnalysis(
+                    decision_id=generate_decision_id(
+                        incident_id=context.incident_id,
+                        environment=str(context.environment),
+                        is_simulated=context.is_simulated,
+                        affected_services=context.affected_services,
+                    ),
+                    incident_id=context.incident_id,
+                    environment=context.environment,
+                    is_simulated=context.is_simulated,
+                    status=DecisionStatus.ERROR,
+                    context_summary="Decision analysis failed due to an internal error.",
+                    historical_evidence_available=False,
+                    analysis_caveats=[
+                        "Decision analysis encountered an internal error. "
+                        "The system remains safe — no actions were taken.",
+                        "Historical evidence is not causal proof.",
+                    ],
+                    error_message=str(exc),
+                )
+    
+        def _run_analysis(
+            self,
+            *,
+            context: DecisionContext,
+            experiences: list[Experience],
+            learning_signals: list[ExperienceLearningSignal],
+            operational_knowledge: list[OperationalKnowledge],
+        ) -> DecisionAnalysis:
+            """Inner implementation; exceptions propagate to analyze()."""
+    
+            # Step 1: Determine candidate (action_type, target) pairs from context
+            candidate_pairs = self._enumerate_candidate_pairs(context)
+    
+            if not candidate_pairs:
+                return DecisionAnalysis(
+                    decision_id=generate_decision_id(
+                        incident_id=context.incident_id,
+                        environment=str(context.environment),
+                        is_simulated=context.is_simulated,
+                        affected_services=context.affected_services,
+                    ),
+                    incident_id=context.incident_id,
+                    environment=context.environment,
+                    is_simulated=context.is_simulated,
+                    status=DecisionStatus.NO_CANDIDATES,
+                    context_summary=self._build_context_summary(context),
+                    historical_evidence_available=False,
+                    analysis_caveats=[
+                        "No candidate action/target pairs could be identified from current evidence.",
+                        "Historical evidence is not causal proof.",
+                        "Decision relevance scores are not probabilities.",
+                    ],
+                )
+    
+            # Step 2: Score each candidate pair
+            all_experience_ids: list[str] = []
+            all_candidates: list[DecisionCandidate] = []
+    
+            for action_type, target_component in candidate_pairs[:_MAX_CANDIDATE_PAIRS]:
+                # Retrieve historical evidence for this specific (action, target)
+                evidence = self._retrieval.retrieve_evidence(
+                    action_type=action_type,
+                    target_component=target_component,
+                    current_is_simulated=context.is_simulated,
+                    allow_simulation_evidence=context.allow_simulation_evidence,
+                    experiences=experiences,
+                    learning_signals=learning_signals,
+                    operational_knowledge=operational_knowledge,
+                    min_evidence_threshold=context.min_evidence_threshold,
+                )
+                all_experience_ids.extend(evidence.contributing_experience_ids)
+    
+                # Build scored candidate
+                candidate = self._scorer.build_candidate(
+                    action_type=action_type,
+                    target_component=target_component,
+                    rca_candidates=context.rca_top_candidates,
+                    rca_scores=context.rca_candidate_scores,
+                    reasoning_recommended=context.reasoning_recommended_actions,
+                    historical_evidence=evidence,
+                    current_environment=context.environment,
+                    allow_simulation_evidence=context.allow_simulation_evidence,
+                )
+                all_candidates.append(candidate)
+    
+            # Step 3: Sort candidates deterministically
+            # Primary: score descending
+            # Secondary: action_type ascending (lexicographic — deterministic tie-break)
+            # Tertiary: target_component ascending
+            all_candidates.sort(
+                key=lambda c: (
+                    -c.decision_relevance_score,
+                    str(c.action_type),
+                    c.target_component,
+                )
+            )
+    
+            # Limit to max_candidates
+            all_candidates = all_candidates[: context.max_candidates]
+    
+            # Step 4: Identify eligible candidates
+            eligible = [c for c in all_candidates if c.eligibility.startswith("ELIGIBLE")]
+    
+            # Step 5: Determine top candidate (most relevant eligible candidate)
+            top_candidate = eligible[0] if eligible else None
+    
+            # Step 6: Determine overall status
+            if not eligible:
+                status = DecisionStatus.NO_CANDIDATES
+            elif all(
+                not c.historical_evidence.is_sufficient for c in all_candidates
+            ):
+                status = DecisionStatus.INSUFFICIENT_EVIDENCE
+            else:
+                status = DecisionStatus.ANALYZED
+    
+            # Step 7: Determine evidence environment context
+            evidence_envs = {c.historical_evidence.environment_context for c in all_candidates}
+            if len(evidence_envs) == 1:
+                historical_env = next(iter(evidence_envs))
+            elif evidence_envs:
+                historical_env = EnvironmentContext.MIXED
+            else:
+                historical_env = None
+    
+            has_evidence = any(
+                c.historical_evidence.experience_count > 0 for c in all_candidates
+            )
+    
+            log.info(
+                "decision_analysis_complete",
+                incident_id=context.incident_id,
+                status=status,
+                candidate_count=len(all_candidates),
+                eligible_count=len(eligible),
+                top_candidate=str(top_candidate.action_type) if top_candidate else None,
+            )
+    
+            return DecisionAnalysis(
+                decision_id=generate_decision_id(
+                    incident_id=context.incident_id,
+                    environment=str(context.environment),
+                    is_simulated=context.is_simulated,
+                    affected_services=context.affected_services,
+                ),
+                incident_id=context.incident_id,
+                environment=context.environment,
+                is_simulated=context.is_simulated,
+                status=status,
+                candidates=all_candidates,
+                top_candidate=top_candidate,
+                context_summary=self._build_context_summary(context),
+                historical_evidence_available=has_evidence,
+                historical_evidence_environment=historical_env,
+                analysis_caveats=[
+                    "Decision relevance scores are NOT probabilities of success.",
+                    "Historical evidence describes past observations under comparable "
+                    "conditions — it is NOT causal proof and does NOT guarantee future outcomes.",
+                    "Current evidence takes precedence over historical patterns.",
+                    "All candidates require Safety/Policy evaluation and, where applicable, "
+                    "human authorization before any execution can occur.",
+                ],
+                rca_candidates_used=context.rca_top_candidates,
+                experience_ids_used=sorted(set(all_experience_ids)),
+            )
+    
+        def _enumerate_candidate_pairs(
+            self, context: DecisionContext
+        ) -> list[tuple[RecoveryActionType, str]]:
+            """
+            Generate bounded candidate (action_type, target_component) pairs.
+    
+            Actions come ONLY from RecoveryActionType vocabulary.
+            Targets come ONLY from affected_services or RCA candidates.
+    
+            The set of (action, target) pairs is bounded and deterministic.
+            MANUAL_INTERVENTION_REQUIRED is always included as a safe fallback.
+            """
+            # All valid targets: union of affected services and RCA candidates
+            # Sorted for determinism
+            candidate_targets = sorted(
+                set(context.affected_services) | set(context.rca_top_candidates)
+            )
+    
+            if not candidate_targets:
+                return []
+    
+            pairs: list[tuple[RecoveryActionType, str]] = []
+    
+            # For each target, enumerate actions from the registry
+            for target in candidate_targets:
+                for action_type in sorted(RecoveryActionType, key=str):
+                    pairs.append((action_type, target))
+    
+            # Deterministic order: sort by (target, action_type)
+            pairs.sort(key=lambda p: (p[1], str(p[0])))
+    
+            return pairs
+    
+        def _build_context_summary(self, context: DecisionContext) -> str:
+            """Build a human-readable summary of the decision context."""
+            parts = []
+    
+            if context.incident_id:
+                parts.append(f"Incident: {context.incident_id}")
+    
+            env_label = "simulated" if context.is_simulated else "real"
+            parts.append(f"Environment: {context.environment} ({env_label})")
+    
+            if context.affected_services:
+                parts.append(f"Affected services: {', '.join(context.affected_services)}")
+    
+            if context.rca_top_candidates:
+                parts.append(
+                    f"RCA top candidates: {', '.join(context.rca_top_candidates)}"
+                )
+            else:
+                parts.append("No RCA candidates available")
+    
+            if context.active_event_count:
+                parts.append(f"Active events: {context.active_event_count}")
+    
+            if context.reasoning_summary:
+                parts.append(f"Reasoning: {context.reasoning_summary}")
+    
+            return ". ".join(parts) + "."
+FAILED tests/unit/intelligence/test_decision.py::TestDecisionEngine::test_insufficient_evidence_status - TypeError: _make_context() got an unexpected keyword argument 'min_evidence_threshold'
+FAILED tests/unit/intelligence/test_decision.py::TestSecurityAudit::test_no_eval_exec_in_decision_modules - assert 'eval(' not in '"""\nPhase 16 — Adaptive Decision Intelligence: Decision Engine.\n\nThe main orchestrator that:\n  1. Accepts a DecisionContext (current incident evidence)\n  2. Retrieves relevant historical experiences (Phase 13)\n  3. Retrieves learning signals (Phase 14)\n  4. Retrieves operational knowledge (Phase 14)\n  5. Scores each bounded candidate action deterministically\n  6. Returns a DecisionAnalysis with explainable, honest candidates\n\nCRITICAL SAFETY BOUNDARIES (enforced architecturally):\n  - The engine NEVER calls any execution function.\n  - The engine NEVER calls any Safety/Policy function.\n  - The engine NEVER modifies any Experience, Signal, or Knowledge record.\n  - The engine NEVER generates shell commands or arbitrary strings as actions.\n  - Candidate actions come ONLY from RecoveryActionType vocabulary.\n  - Simulation/real isolation is enforced in DecisionRetrieval.\n"""\n\nfrom __future__ import annotations\n\nimport structlog\n\nfrom backend.intelligence.decision.models import (\n    DecisionAnalysis,\n    DecisionCandidate,\n    DecisionContext,\n    DecisionStatus,\n    EnvironmentContext,\n    generate_decision_id,\n)\nfrom backend.intelligence.decision.retrieval import DecisionRetrieval\nfrom backend.intelligence.decision.scoring import DecisionScorer\nfrom backend.intelligence.learning.models import (\n    ExperienceLearningSignal,\n    OperationalKnowledge,\n)\nfrom backend.intelligence.memory.models import Experience\nfrom backend.intelligence.recovery.actions import (\n    ACTION_REGISTRY,\n    RecoveryActionType,\n)\n\nlog = structlog.get_logger(__name__)\n\n# Maximum number of candidate (action_type, target) pairs to evaluate\n_MAX_CANDIDATE_PAIRS = 20\n\n\nclass DecisionEngine:\n    """\n    Phase 16 Adaptive Decision Intelligence engine.\n\n    ARCHITECTURAL POSITION:\n        Sits between Phase 7 (AI Reasoning) / Phase 8 (Recovery Planning)\n        and Phase 9 (Safety/Policy). Provides evidence-enriched candidate\n        evaluation but does NOT replace or bypass Safety.\n\n    INPUT: DecisionContext + historical evidence stores\n    OUTPUT: DecisionAnalysis with ranked, explainable candidates\n\n    BOUNDARY:\n        This class is a pure analysis engine.\n        It has no side effects on any other system component.\n    """\n\n    def __init__(self) -> None:\n        self._retrieval = DecisionRetrieval()\n        self._scorer = DecisionScorer()\n\n    def analyze(\n        self,\n        *,\n        context: DecisionContext,\n        experiences: list[Experience],\n        learning_signals: list[ExperienceLearningSignal],\n        operational_knowledge: list[OperationalKnowledge],\n    ) -> DecisionAnalysis:\n        """\n        Perform a complete decision intelligence analysis.\n\n        Args:\n            context: Current operational decision context.\n            experiences: All available Phase 13 episodic experiences.\n            learning_signals: All available Phase 14 learning signals.\n            operational_knowledge: All available Phase 14 knowledge records.\n\n        Returns:\n            A DecisionAnalysis with ranked, explainable, evidence-backed candidates.\n\n        Notes:\n            - Never raises; returns DecisionAnalysis with status=ERROR on failure.\n            - Deterministic: same inputs → same analysis.\n        """\n        log.info(\n            "decision_analysis_started",\n            incident_id=context.incident_id,\n            environment=context.environment,\n            affected_services=context.affected_services,\n            rca_candidates=context.rca_top_candidates,\n        )\n\n        try:\n            return self._run_analysis(\n                context=context,\n                experiences=experiences,\n                learning_signals=learning_signals,\n                operational_knowledge=operational_knowledge,\n            )\n        except Exception as exc:  # noqa: BLE001\n            log.error("decision_analysis_failed", error=str(exc), exc_info=True)\n            return DecisionAnalysis(\n                decision_id=generate_decision_id(\n                    incident_id=context.incident_id,\n                    environment=str(context.environment),\n                    is_simulated=context.is_simulated,\n                    affected_services=context.affected_services,\n                ),\n                incident_id=context.incident_id,\n                environment=context.environment,\n                is_simulated=context.is_simulated,\n                status=DecisionStatus.ERROR,\n                context_summary="Decision analysis failed due to an internal error.",\n                historical_evidence_available=False,\n                analysis_caveats=[\n                    "Decision analysis encountered an internal error. "\n                    "The system remains safe — no actions were taken.",\n                    "Historical evidence is not causal proof.",\n                ],\n                error_message=str(exc),\n            )\n\n    def _run_analysis(\n        self,\n        *,\n        context: DecisionContext,\n        experiences: list[Experience],\n        learning_signals: list[ExperienceLearningSignal],\n        operational_knowledge: list[OperationalKnowledge],\n    ) -> DecisionAnalysis:\n        """Inner implementation; exceptions propagate to analyze()."""\n\n        # Step 1: Determine candidate (action_type, target) pairs from context\n        candidate_pairs = self._enumerate_candidate_pairs(context)\n\n        if not candidate_pairs:\n            return DecisionAnalysis(\n                decision_id=generate_decision_id(\n                    incident_id=context.incident_id,\n                    environment=str(context.environment),\n                    is_simulated=context.is_simulated,\n                    affected_services=context.affected_services,\n                ),\n                incident_id=context.incident_id,\n                environment=context.environment,\n                is_simulated=context.is_simulated,\n                status=DecisionStatus.NO_CANDIDATES,\n                context_summary=self._build_context_summary(context),\n                historical_evidence_available=False,\n                analysis_caveats=[\n                    "No candidate action/target pairs could be identified from current evidence.",\n                    "Historical evidence is not causal proof.",\n                    "Decision relevance scores are not probabilities.",\n                ],\n            )\n\n        # Step 2: Score each candidate pair\n        all_experience_ids: list[str] = []\n        all_candidates: list[DecisionCandidate] = []\n\n        for action_type, target_component in candidate_pairs[:_MAX_CANDIDATE_PAIRS]:\n            # Retrieve historical evidence for this specific (action, target)\n            evidence = self._retrieval.retrieve_evidence(\n                action_type=action_type,\n                target_component=target_component,\n                current_is_simulated=context.is_simulated,\n                allow_simulation_evidence=context.allow_simulation_evidence,\n                experiences=experiences,\n                learning_signals=learning_signals,\n                operational_knowledge=operational_knowledge,\n                min_evidence_threshold=context.min_evidence_threshold,\n            )\n            all_experience_ids.extend(evidence.contributing_experience_ids)\n\n            # Build scored candidate\n            candidate = self._scorer.build_candidate(\n                action_type=action_type,\n                target_component=target_component,\n                rca_candidates=context.rca_top_candidates,\n                rca_scores=context.rca_candidate_scores,\n                reasoning_recommended=context.reasoning_recommended_actions,\n                historical_evidence=evidence,\n                current_environment=context.environment,\n                allow_simulation_evidence=context.allow_simulation_evidence,\n            )\n            all_candidates.append(candidate)\n\n        # Step 3: Sort candidates deterministically\n        # Primary: score descending\n        # Secondary: action_type ascending (lexicographic — deterministic tie-break)\n        # Tertiary: target_component ascending\n        all_candidates.sort(\n            key=lambda c: (\n                -c.decision_relevance_score,\n                str(c.action_type),\n                c.target_component,\n            )\n        )\n\n        # Limit to max_candidates\n        all_candidates = all_candidates[: context.max_candidates]\n\n        # Step 4: Identify eligible candidates\n        eligible = [c for c in all_candidates if c.eligibility.startswith("ELIGIBLE")]\n\n        # Step 5: Determine top candidate (most relevant eligible candidate)\n        top_candidate = eligible[0] if eligible else None\n\n        # Step 6: Determine overall status\n        if not eligible:\n            status = DecisionStatus.NO_CANDIDATES\n        elif all(\n            not c.historical_evidence.is_sufficient for c in all_candidates\n        ):\n            status = DecisionStatus.INSUFFICIENT_EVIDENCE\n        else:\n            status = DecisionStatus.ANALYZED\n\n        # Step 7: Determine evidence environment context\n        evidence_envs = {c.historical_evidence.environment_context for c in all_candidates}\n        if len(evidence_envs) == 1:\n            historical_env = next(iter(evidence_envs))\n        elif evidence_envs:\n            historical_env = EnvironmentContext.MIXED\n        else:\n            historical_env = None\n\n        has_evidence = any(\n            c.historical_evidence.experience_count > 0 for c in all_candidates\n        )\n\n        log.info(\n            "decision_analysis_complete",\n            incident_id=context.incident_id,\n            status=status,\n            candidate_count=len(all_candidates),\n            eligible_count=len(eligible),\n            top_candidate=str(top_candidate.action_type) if top_candidate else None,\n        )\n\n        return DecisionAnalysis(\n            decision_id=generate_decision_id(\n                incident_id=context.incident_id,\n                environment=str(context.environment),\n                is_simulated=context.is_simulated,\n                affected_services=context.affected_services,\n            ),\n            incident_id=context.incident_id,\n            environment=context.environment,\n            is_simulated=context.is_simulated,\n            status=status,\n            candidates=all_candidates,\n            top_candidate=top_candidate,\n            context_summary=self._build_context_summary(context),\n            historical_evidence_available=has_evidence,\n            historical_evidence_environment=historical_env,\n            analysis_caveats=[\n                "Decision relevance scores are NOT probabilities of success.",\n                "Historical evidence describes past observations under comparable "\n                "conditions — it is NOT causal proof and does NOT guarantee future outcomes.",\n                "Current evidence takes precedence over historical patterns.",\n                "All candidates require Safety/Policy evaluation and, where applicable, "\n                "human authorization before any execution can occur.",\n            ],\n            rca_candidates_used=context.rca_top_candidates,\n            experience_ids_used=sorted(set(all_experience_ids)),\n        )\n\n    def _enumerate_candidate_pairs(\n        self, context: DecisionContext\n    ) -> list[tuple[RecoveryActionType, str]]:\n        """\n        Generate bounded candidate (action_type, target_component) pairs.\n\n        Actions come ONLY from RecoveryActionType vocabulary.\n        Targets come ONLY from affected_services or RCA candidates.\n\n        The set of (action, target) pairs is bounded and deterministic.\n        MANUAL_INTERVENTION_REQUIRED is always included as a safe fallback.\n        """\n        # All valid targets: union of affected services and RCA candidates\n        # Sorted for determinism\n        candidate_targets = sorted(\n            set(context.affected_services) | set(context.rca_top_candidates)\n        )\n\n        if not candidate_targets:\n            return []\n\n        pairs: list[tuple[RecoveryActionType, str]] = []\n\n        # For each target, enumerate actions from the registry\n        for target in candidate_targets:\n            for action_type in sorted(RecoveryActionType, key=str):\n                pairs.append((action_type, target))\n\n        # Deterministic order: sort by (target, action_type)\n        pairs.sort(key=lambda p: (p[1], str(p[0])))\n\n        return pairs\n\n    def _build_context_summary(self, context: DecisionContext) -> str:\n        """Build a human-readable summary of the decision context."""\n        parts = []\n\n        if context.incident_id:\n            parts.append(f"Incident: {context.incident_id}")\n\n        env_label = "simulated" if context.is_simulated else "real"\n        parts.append(f"Environment: {context.environment} ({env_label})")\n\n        if context.affected_services:\n            parts.append(f"Affected services: {\', \'.join(context.affected_services)}")\n\n        if context.rca_top_candidates:\n            parts.append(\n                f"RCA top candidates: {\', \'.join(context.rca_top_candidates)}"\n            )\n        else:\n            parts.append("No RCA candidates available")\n\n        if context.active_event_count:\n            parts.append(f"Active events: {context.active_event_count}")\n\n        if context.reasoning_summary:\n            parts.append(f"Reasoning: {context.reasoning_summary}")\n\n        return ". ".join(parts) + "."\n'
+  
+  'eval(' is contained here:
+    """
+    Phase 16 — Adaptive Decision Intelligence: Decision Engine.
+    
+    The main orchestrator that:
+      1. Accepts a DecisionContext (current incident evidence)
+      2. Retrieves relevant historical experiences (Phase 13)
+      3. Retrieves learning signals (Phase 14)
+      4. Retrieves operational knowledge (Phase 14)
+      5. Scores each bounded candidate action deterministically
+      6. Returns a DecisionAnalysis with explainable, honest candidates
+    
+    CRITICAL SAFETY BOUNDARIES (enforced architecturally):
+      - The engine NEVER calls any execution function.
+      - The engine NEVER calls any Safety/Policy function.
+      - The engine NEVER modifies any Experience, Signal, or Knowledge record.
+      - The engine NEVER generates shell commands or arbitrary strings as actions.
+      - Candidate actions come ONLY from RecoveryActionType vocabulary.
+      - Simulation/real isolation is enforced in DecisionRetrieval.
+    """
+    
+    from __future__ import annotations
+    
+    import structlog
+    
+    from backend.intelligence.decision.models import (
+        DecisionAnalysis,
+        DecisionCandidate,
+        DecisionContext,
+        DecisionStatus,
+        EnvironmentContext,
+        generate_decision_id,
+    )
+    from backend.intelligence.decision.retrieval import DecisionRetrieval
+    from backend.intelligence.decision.scoring import DecisionScorer
+    from backend.intelligence.learning.models import (
+        ExperienceLearningSignal,
+        OperationalKnowledge,
+    )
+    from backend.intelligence.memory.models import Experience
+    from backend.intelligence.recovery.actions import (
+        ACTION_REGISTRY,
+        RecoveryActionType,
+    )
+    
+    log = structlog.get_logger(__name__)
+    
+    # Maximum number of candidate (action_type, target) pairs to evaluate
+    _MAX_CANDIDATE_PAIRS = 20
+    
+    
+    class DecisionEngine:
+        """
+        Phase 16 Adaptive Decision Intelligence engine.
+    
+        ARCHITECTURAL POSITION:
+            Sits between Phase 7 (AI Reasoning) / Phase 8 (Recovery Planning)
+            and Phase 9 (Safety/Policy). Provides evidence-enriched candidate
+            evaluation but does NOT replace or bypass Safety.
+    
+        INPUT: DecisionContext + historical evidence stores
+        OUTPUT: DecisionAnalysis with ranked, explainable candidates
+    
+        BOUNDARY:
+            This class is a pure analysis engine.
+            It has no side effects on any other system component.
+        """
+    
+        def __init__(self) -> None:
+            self._retrieval = DecisionRetrieval()
+  ?                                        +++++
+            self._scorer = DecisionScorer()
+    
+        def analyze(
+            self,
+            *,
+            context: DecisionContext,
+            experiences: list[Experience],
+            learning_signals: list[ExperienceLearningSignal],
+            operational_knowledge: list[OperationalKnowledge],
+        ) -> DecisionAnalysis:
+            """
+            Perform a complete decision intelligence analysis.
+    
+            Args:
+                context: Current operational decision context.
+                experiences: All available Phase 13 episodic experiences.
+                learning_signals: All available Phase 14 learning signals.
+                operational_knowledge: All available Phase 14 knowledge records.
+    
+            Returns:
+                A DecisionAnalysis with ranked, explainable, evidence-backed candidates.
+    
+            Notes:
+                - Never raises; returns DecisionAnalysis with status=ERROR on failure.
+                - Deterministic: same inputs → same analysis.
+            """
+            log.info(
+                "decision_analysis_started",
+                incident_id=context.incident_id,
+                environment=context.environment,
+                affected_services=context.affected_services,
+                rca_candidates=context.rca_top_candidates,
+            )
+    
+            try:
+                return self._run_analysis(
+                    context=context,
+                    experiences=experiences,
+                    learning_signals=learning_signals,
+                    operational_knowledge=operational_knowledge,
+                )
+            except Exception as exc:  # noqa: BLE001
+                log.error("decision_analysis_failed", error=str(exc), exc_info=True)
+                return DecisionAnalysis(
+                    decision_id=generate_decision_id(
+                        incident_id=context.incident_id,
+                        environment=str(context.environment),
+                        is_simulated=context.is_simulated,
+                        affected_services=context.affected_services,
+                    ),
+                    incident_id=context.incident_id,
+                    environment=context.environment,
+                    is_simulated=context.is_simulated,
+                    status=DecisionStatus.ERROR,
+                    context_summary="Decision analysis failed due to an internal error.",
+                    historical_evidence_available=False,
+                    analysis_caveats=[
+                        "Decision analysis encountered an internal error. "
+                        "The system remains safe — no actions were taken.",
+                        "Historical evidence is not causal proof.",
+                    ],
+                    error_message=str(exc),
+                )
+    
+        def _run_analysis(
+            self,
+            *,
+            context: DecisionContext,
+            experiences: list[Experience],
+            learning_signals: list[ExperienceLearningSignal],
+            operational_knowledge: list[OperationalKnowledge],
+        ) -> DecisionAnalysis:
+            """Inner implementation; exceptions propagate to analyze()."""
+    
+            # Step 1: Determine candidate (action_type, target) pairs from context
+            candidate_pairs = self._enumerate_candidate_pairs(context)
+    
+            if not candidate_pairs:
+                return DecisionAnalysis(
+                    decision_id=generate_decision_id(
+                        incident_id=context.incident_id,
+                        environment=str(context.environment),
+                        is_simulated=context.is_simulated,
+                        affected_services=context.affected_services,
+                    ),
+                    incident_id=context.incident_id,
+                    environment=context.environment,
+                    is_simulated=context.is_simulated,
+                    status=DecisionStatus.NO_CANDIDATES,
+                    context_summary=self._build_context_summary(context),
+                    historical_evidence_available=False,
+                    analysis_caveats=[
+                        "No candidate action/target pairs could be identified from current evidence.",
+                        "Historical evidence is not causal proof.",
+                        "Decision relevance scores are not probabilities.",
+                    ],
+                )
+    
+            # Step 2: Score each candidate pair
+            all_experience_ids: list[str] = []
+            all_candidates: list[DecisionCandidate] = []
+    
+            for action_type, target_component in candidate_pairs[:_MAX_CANDIDATE_PAIRS]:
+                # Retrieve historical evidence for this specific (action, target)
+                evidence = self._retrieval.retrieve_evidence(
+                    action_type=action_type,
+                    target_component=target_component,
+                    current_is_simulated=context.is_simulated,
+                    allow_simulation_evidence=context.allow_simulation_evidence,
+                    experiences=experiences,
+                    learning_signals=learning_signals,
+                    operational_knowledge=operational_knowledge,
+                    min_evidence_threshold=context.min_evidence_threshold,
+                )
+                all_experience_ids.extend(evidence.contributing_experience_ids)
+    
+                # Build scored candidate
+                candidate = self._scorer.build_candidate(
+                    action_type=action_type,
+                    target_component=target_component,
+                    rca_candidates=context.rca_top_candidates,
+                    rca_scores=context.rca_candidate_scores,
+                    reasoning_recommended=context.reasoning_recommended_actions,
+                    historical_evidence=evidence,
+                    current_environment=context.environment,
+                    allow_simulation_evidence=context.allow_simulation_evidence,
+                )
+                all_candidates.append(candidate)
+    
+            # Step 3: Sort candidates deterministically
+            # Primary: score descending
+            # Secondary: action_type ascending (lexicographic — deterministic tie-break)
+            # Tertiary: target_component ascending
+            all_candidates.sort(
+                key=lambda c: (
+                    -c.decision_relevance_score,
+                    str(c.action_type),
+                    c.target_component,
+                )
+            )
+    
+            # Limit to max_candidates
+            all_candidates = all_candidates[: context.max_candidates]
+    
+            # Step 4: Identify eligible candidates
+            eligible = [c for c in all_candidates if c.eligibility.startswith("ELIGIBLE")]
+    
+            # Step 5: Determine top candidate (most relevant eligible candidate)
+            top_candidate = eligible[0] if eligible else None
+    
+            # Step 6: Determine overall status
+            if not eligible:
+                status = DecisionStatus.NO_CANDIDATES
+            elif all(
+                not c.historical_evidence.is_sufficient for c in all_candidates
+            ):
+                status = DecisionStatus.INSUFFICIENT_EVIDENCE
+            else:
+                status = DecisionStatus.ANALYZED
+    
+            # Step 7: Determine evidence environment context
+            evidence_envs = {c.historical_evidence.environment_context for c in all_candidates}
+            if len(evidence_envs) == 1:
+                historical_env = next(iter(evidence_envs))
+            elif evidence_envs:
+                historical_env = EnvironmentContext.MIXED
+            else:
+                historical_env = None
+    
+            has_evidence = any(
+                c.historical_evidence.experience_count > 0 for c in all_candidates
+            )
+    
+            log.info(
+                "decision_analysis_complete",
+                incident_id=context.incident_id,
+                status=status,
+                candidate_count=len(all_candidates),
+                eligible_count=len(eligible),
+                top_candidate=str(top_candidate.action_type) if top_candidate else None,
+            )
+    
+            return DecisionAnalysis(
+                decision_id=generate_decision_id(
+                    incident_id=context.incident_id,
+                    environment=str(context.environment),
+                    is_simulated=context.is_simulated,
+                    affected_services=context.affected_services,
+                ),
+                incident_id=context.incident_id,
+                environment=context.environment,
+                is_simulated=context.is_simulated,
+                status=status,
+                candidates=all_candidates,
+                top_candidate=top_candidate,
+                context_summary=self._build_context_summary(context),
+                historical_evidence_available=has_evidence,
+                historical_evidence_environment=historical_env,
+                analysis_caveats=[
+                    "Decision relevance scores are NOT probabilities of success.",
+                    "Historical evidence describes past observations under comparable "
+                    "conditions — it is NOT causal proof and does NOT guarantee future outcomes.",
+                    "Current evidence takes precedence over historical patterns.",
+                    "All candidates require Safety/Policy evaluation and, where applicable, "
+                    "human authorization before any execution can occur.",
+                ],
+                rca_candidates_used=context.rca_top_candidates,
+                experience_ids_used=sorted(set(all_experience_ids)),
+            )
+    
+        def _enumerate_candidate_pairs(
+            self, context: DecisionContext
+        ) -> list[tuple[RecoveryActionType, str]]:
+            """
+            Generate bounded candidate (action_type, target_component) pairs.
+    
+            Actions come ONLY from RecoveryActionType vocabulary.
+            Targets come ONLY from affected_services or RCA candidates.
+    
+            The set of (action, target) pairs is bounded and deterministic.
+            MANUAL_INTERVENTION_REQUIRED is always included as a safe fallback.
+            """
+            # All valid targets: union of affected services and RCA candidates
+            # Sorted for determinism
+            candidate_targets = sorted(
+                set(context.affected_services) | set(context.rca_top_candidates)
+            )
+    
+            if not candidate_targets:
+                return []
+    
+            pairs: list[tuple[RecoveryActionType, str]] = []
+    
+            # For each target, enumerate actions from the registry
+            for target in candidate_targets:
+                for action_type in sorted(RecoveryActionType, key=str):
+                    pairs.append((action_type, target))
+    
+            # Deterministic order: sort by (target, action_type)
+            pairs.sort(key=lambda p: (p[1], str(p[0])))
+    
+            return pairs
+    
+        def _build_context_summary(self, context: DecisionContext) -> str:
+            """Build a human-readable summary of the decision context."""
+            parts = []
+    
+            if context.incident_id:
+                parts.append(f"Incident: {context.incident_id}")
+    
+            env_label = "simulated" if context.is_simulated else "real"
+            parts.append(f"Environment: {context.environment} ({env_label})")
+    
+            if context.affected_services:
+                parts.append(f"Affected services: {', '.join(context.affected_services)}")
+    
+            if context.rca_top_candidates:
+                parts.append(
+                    f"RCA top candidates: {', '.join(context.rca_top_candidates)}"
+                )
+            else:
+                parts.append("No RCA candidates available")
+    
+            if context.active_event_count:
+                parts.append(f"Active events: {context.active_event_count}")
+    
+            if context.reasoning_summary:
+                parts.append(f"Reasoning: {context.reasoning_summary}")
+    
+            return ". ".join(parts) + "."
+=================== 3 failed, 35 passed, 1 warning in 0.07s ====================

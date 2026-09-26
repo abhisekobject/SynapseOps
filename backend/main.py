@@ -188,6 +188,15 @@ def create_app() -> FastAPI:
     # Register exception handlers
     register_exception_handlers(app)
 
+    from fastapi.middleware.cors import CORSMiddleware
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     # Phase 3: Request correlation ID + Prometheus metrics recording
     app.add_middleware(RequestCorrelationMiddleware)
 

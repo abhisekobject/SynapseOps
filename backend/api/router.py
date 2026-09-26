@@ -2,10 +2,13 @@
 
 from fastapi import APIRouter
 
+from backend.api.routes.anomalies import router as anomalies_router
+from backend.api.routes.decision import router as decision_router
 from backend.api.routes.events import router as events_router
 from backend.api.routes.execution import router as execution_router
 from backend.api.routes.feedback import router as feedback_router
 from backend.api.routes.health import router as health_router
+from backend.api.routes.incidents import router as incidents_router
 from backend.api.routes.intelligence import router as intelligence_router
 from backend.api.routes.learning import router as learning_router
 from backend.api.routes.memory import router as memory_router
@@ -28,6 +31,8 @@ api_router.include_router(simulation_router, prefix="/api/v1")
 # Phase 4: State and Events API
 api_router.include_router(state_router, prefix="/api/v1")
 api_router.include_router(events_router, prefix="/api/v1")
+api_router.include_router(anomalies_router, prefix="/api/v1")
+api_router.include_router(incidents_router, prefix="/api/v1")
 
 # Phase 6-14: Intelligence, AI, Recovery, Safety, Execution, Outcomes, Feedback, Memory & Learning API
 api_router.include_router(intelligence_router, prefix="/api/v1")
@@ -39,3 +44,4 @@ api_router.include_router(outcomes_router, prefix="/api/v1")
 api_router.include_router(feedback_router, prefix="/api/v1")
 api_router.include_router(memory_router, prefix="/api/v1")
 api_router.include_router(learning_router, prefix="/api/v1")
+api_router.include_router(decision_router, prefix="/api/v1")  # Phase 16
